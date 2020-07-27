@@ -11,23 +11,11 @@
 #' @param ... arguments passed to other functions
 #'
 sim_outcome_survival <- function(data, formula, reg_coefs, phi = 1.2,
-                                 mean_cens = 30.0,
-                                 .tries = 5L, ...) {
+                                 mean_cens = 30.0, .tries = 5L,
+                                 seed = NULL, ...) {
 
-  desgn_mat <- model.matrix(formula, data)
-
-  if (!is.null(names(reg_coefs)) &
-      any(is.na(match(colnames(desgn_mat), names(reg_coefs))))) {
-    errormsg("The names of the coefficients do not match the names of the
-             design matrix.")
-  } else if (is.null(names(reg_coefs))) {
-    if (length(reg_coefs) != ncol(desgn_mat)) {
-      errormsg("You have provided %s regression coefficients, but the design
-               matrix has %s columns.", length(reg_coefs), ncol(desgn_mat))
-    } else {
-      names(reg_coefs) <- colnames(desgn_mat)
-    }
-  }
+  desgn_mat <- model.matrix(formula[-2], data)
+  reg_coefs <- check_coef_mat(reg_coefs, desgn_mat)
 
   # linear predictor
   lin_pred <- as.vector(desgn_mat %*% reg_coefs[colnames(desgn_mat)])
@@ -69,7 +57,7 @@ sim_outcome_survival <- function(data, formula, reg_coefs, phi = 1.2,
   # simulate censoring times from an exponential distribution, and calculate the
   # observed event times, i.e., min(true event times, censoring times)
   cens_times <- runif(n, 0L, 2L * mean_cens)
-  data$time <- pmin(true_times, cens_times)
-  data$event <- as.numeric(true_times <= cens_times) # event indicator
+  data[, all.vars(formula[[2]])] <- cbind(pmin(true_times, cens_times),
+                                          as.numeric(true_times <= cens_times))
   data
 }

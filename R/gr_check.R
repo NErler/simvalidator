@@ -1,6 +1,10 @@
 
-
-run_jointai_flex <- function(fun, data, model_args, gr_check_args, ...) {
+#' Run a JointAI model with flexible number of iterations
+#' @param fun JointAI model function
+#' @param model_args a list of arguments passed to `fun`
+#' @param gr_check_args a list of arguments to be passed to the gr check
+#' @export
+run_jointai_flex <- function(fun, model_args, gr_check_args, ...) {
 
   fitted_model <- do.call(fun,
                           set_args(fun = fun,

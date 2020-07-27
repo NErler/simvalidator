@@ -29,7 +29,7 @@ run_sim <- function(sim_params, covar_def, data_params, models,
   set.seed(sim_params$global_seed)
   seeds <- sample(1:1e6, size = sim_params$nr_sims)
   sim_res <- foreach::`%dopar%`(foreach::foreach(seed = seeds), {
-    data <- simvalidator::sim_data(covar_def, data_params, seed = seed)
+    data <- sim_data(covar_def, data_params, seed = seed)
     res <- fit_models(models, data_params$formula, data, seed)
 
     data_info <- get_data_info(data, seed)
@@ -75,6 +75,7 @@ print.simulation_result <- function(x,
                                     digits = max(3L, getOption("digits") - 3L),
                                     ...) {
 
+  cat("\n#------------------------------------------------------#\n")
   cat("Simulation of", x$sim_params$nr_sims, "datasets with a",
       x$data_params$response_type, "outcome.\n")
   cat(" - Computational time:",
@@ -101,5 +102,6 @@ print.simulation_result <- function(x,
     cat("\nThe simulation was saved to\n",
         file.path(x$path, x$file_name), "\n")
   }
+  cat("\n#------------------------------------------------------#\n")
 }
 
