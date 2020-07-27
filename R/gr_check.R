@@ -108,7 +108,7 @@ check_gr_crit <- function(model, minsize = 500L, step = 200L, subset = NULL,
   gr <- do.call(rbind, gr)
 
   if (any(rowMeans(gr < cutoff) > prop)) {
-    grid[min(which(colMeans(gr < cutoff) > prop))]
+    grid[min(which(rowMeans(gr < cutoff) > prop))]
   } else {
     NA
   }
@@ -130,7 +130,7 @@ check_gr_crit_loo <- function(model, minsize = 500L, step = 200L,
     gr <- do.call(rbind, gr)
 
     if (any(rowMeans(gr < cutoff) > prop)) {
-      grid[min(which(colMeans(gr < cutoff) > prop))]
+      grid[min(which(rowMeans(gr < cutoff) > prop))]
     } else {
       NA
     }
