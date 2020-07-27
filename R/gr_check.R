@@ -121,7 +121,7 @@ check_gr_crit_loo <- function(model, minsize = 500L, step = 200L,
               to = end(model$MCMC) - minsize,
               by = step)
 
-  lapply(seq_along(model$MCMC), function(chain) {
+  vapply(seq_along(model$MCMC), function(chain) {
     gr <- lapply(grid, function(k){
       JointAI::GR_crit(model, subset = subset, exclude_chains = chain,
                        start = k, autoburnin = FALSE,
@@ -129,10 +129,10 @@ check_gr_crit_loo <- function(model, minsize = 500L, step = 200L,
     })
     gr <- do.call(rbind, gr)
 
-    if (any(rowMeans(gr < 1.2) > 0.8)) {
-      grid[min(which(colMeans(gr < 1.2) > 0.8))]
+    if (any(rowMeans(gr < cutoff) > prop)) {
+      grid[min(which(colMeans(gr < cutoff) > prop))]
     } else {
       NA
     }
-  })
+  }, FUN.VALUE = numeric(1L))
 }
