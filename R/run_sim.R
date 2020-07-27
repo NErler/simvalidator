@@ -30,7 +30,7 @@ run_sim <- function(sim_params, covar_def, data_params, models,
   seeds <- sample(1:1e6, size = sim_params$nr_sims)
   sim_res <- foreach::`%dopar%`(foreach::foreach(seed = seeds), {
     data <- sim_data(covar_def, data_params, seed = seed)
-    res <- fit_models(models, data_params$formula, data, seed)
+    res <- fit_models(models, formula = data_params$formula, data, seed)
 
     data_info <- get_data_info(data, seed)
     list(res = res, data_info = data_info)
