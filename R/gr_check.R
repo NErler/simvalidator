@@ -4,7 +4,8 @@
 #' @param model_args a list of arguments passed to `fun`
 #' @param gr_check_args a list of arguments to be passed to the gr check
 #' @export
-run_jointai_flex <- function(fun, model_args, gr_check_args, ...) {
+run_jointai_flex <- function(fun, formula, data, model_args,
+                             gr_check_args, ...) {
 
   fitted_model <- do.call(fun,
                           set_args(fun = fun,
@@ -27,9 +28,9 @@ run_jointai_flex <- function(fun, model_args, gr_check_args, ...) {
 
 
 
-run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L, step = 200L,
-                         subset = NULL, cutoff = 1.2, prop = 0.8,
-                         max_try = 5) {
+run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
+                         step = 200L, subset = NULL, cutoff = 1.2, prop = 0.8,
+                         max_try = 5L) {
 
   if (is.null(n.iter)) {
     n.iter <- fitted_model$mcmc_settings$n.iter
