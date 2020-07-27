@@ -1,0 +1,20 @@
+Package: simvalidator
+Title: Validation of Statistical Models via Simulation
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Nicole",
+           family = "Erler",
+           role = c("aut", "cre"),
+           email = "n.erler@erasmusmc.nl",
+           comment = c(ORCID = "0000-0002-9370-6832"))
+Description: Simulate data, fit a model and summarize the results to evaluate
+             model validity.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Language: en-UK
+SystemRequirements: JAGS (http://mcmc-jags.sourceforge.net)
+Imports: JointAI, future, foreach, coda
+Suggests: benchmarkme, ggplot2, plyr, kableExtra
