@@ -18,7 +18,9 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-<div style = "color:darkblue";><strong>Work in progress.</strong></div>
+<div style = "color:darkblue";><strong>Work in progress!!!</strong></div>
+
+<br>
 
 The goal of simvalidator is to perform simulation analysis to validate model
 results, and to present these results in Rmarkdown documents.
