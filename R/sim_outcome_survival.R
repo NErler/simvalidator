@@ -8,6 +8,7 @@
 #' @param mean_cens mean censoring time
 #' @param .tries integer; how often is the upper limit increased when looking
 #'               for the root
+#' @param seed the seed value
 #' @param ... arguments passed to other functions
 #'
 sim_outcome_survival <- function(data, formula, reg_coefs, phi = 1.2,

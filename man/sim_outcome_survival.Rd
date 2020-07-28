@@ -11,6 +11,7 @@ sim_outcome_survival(
   phi = 1.2,
   mean_cens = 30,
   .tries = 5L,
+  seed = NULL,
   ...
 )
 }
@@ -29,6 +30,8 @@ is created from \code{formula} and \code{data}.}
 
 \item{.tries}{integer; how often is the upper limit increased when looking
 for the root}
+
+\item{seed}{the seed value}
 
 \item{...}{arguments passed to other functions}
 }

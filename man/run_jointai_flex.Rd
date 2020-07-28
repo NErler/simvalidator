@@ -4,14 +4,20 @@
 \alias{run_jointai_flex}
 \title{Run a JointAI model with flexible number of iterations}
 \usage{
-run_jointai_flex(fun, model_args, gr_check_args, ...)
+run_jointai_flex(fun, formula, data, model_args, gr_check_args, ...)
 }
 \arguments{
 \item{fun}{JointAI model function}
 
+\item{formula}{the model formula}
+
+\item{data}{a \code{data.frame}}
+
 \item{model_args}{a list of arguments passed to \code{fun}}
 
 \item{gr_check_args}{a list of arguments to be passed to the gr check}
+
+\item{...}{currently not used}
 }
 \description{
 Run a JointAI model with flexible number of iterations
