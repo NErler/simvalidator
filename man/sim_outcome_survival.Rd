@@ -31,6 +31,8 @@ is created from \code{formula} and \code{data}.}
 \item{.tries}{integer; how often is the upper limit increased when looking
 for the root}
 
+\item{seed}{the seed value}
+
 \item{...}{arguments passed to other functions}
 }
 \description{
