@@ -107,7 +107,7 @@ This function fits each of the models and applies the corresponding
 ```{r}
 sim_params <- list(
   global_seed = 2020,
-  nr_sims = 100
+  nr_sims = 10
 )
 ```
 
@@ -116,8 +116,7 @@ library("doFuture")
 registerDoFuture()
 
 plan(list(multisession, sequential))
-sim_out <- run_sim(sim_params, covar_def, data_params, response_type = "lm",
-                   models)
+sim_out <- run_sim(sim_params, covar_def, data_params, models)
 
 sim_out
 ```
