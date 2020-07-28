@@ -29,10 +29,14 @@ set_args <- function(fun, args) {
   default_args$`...` <- NULL
 
   # augment the arguments with the default arguments
-  args[setdiff(names(default_args), names(args))] <-
-    default_args[setdiff(names(default_args), names(args))]
+  # args[setdiff(names(default_args), names(args))] <-
+  #   default_args[setdiff(names(default_args), names(args))]
 
-  args
+  default_args[intersect(names(args), names(default_args))] <-
+    args[intersect(names(args), names(default_args))]
+
+
+  default_args
 }
 
 
