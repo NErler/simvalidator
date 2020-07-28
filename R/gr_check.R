@@ -3,17 +3,19 @@
 #' @param fun JointAI model function
 #' @param formula the model formula
 #' @param data a `data.frame`
+#' @param seed the seed value
 #' @param model_args a list of arguments passed to `fun`
 #' @param gr_check_args a list of arguments to be passed to the gr check
 #' @param ... currently not used
 #' @export
-run_jointai_flex <- function(fun, formula, data, model_args,
+run_jointai_flex <- function(fun, formula, data, seed = NULL, model_args,
                              gr_check_args, ...) {
 
   fitted_model <- do.call(fun,
                           set_args(fun = fun,
                                    args = c(formula = formula,
                                             list(data = data),
+                                            seed = seed,
                                             model_args)
                           )
   )
