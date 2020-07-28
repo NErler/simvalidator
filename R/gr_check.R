@@ -107,7 +107,7 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
 check_gr_crit <- function(model, minsize = 500L, step = 200L, subset = NULL,
                           cutoff = 1.2, prop = 0.8, gr_max = 1.5) {
 
-  grid <- seq(from = start(model$MCMC) + minsize,
+  grid <- seq(from = start(model$MCMC),
               to = end(model$MCMC) - minsize,
               by = step)
 
@@ -130,7 +130,7 @@ check_gr_crit_loo <- function(model, minsize = 500L, step = 200L,
                               subset = NULL, cutoff = 1.2, prop = 0.8,
                               gr_max = 1.5) {
 
-  grid <- seq(from = start(model$MCMC) + minsize,
+  grid <- seq(from = start(model$MCMC),
               to = end(model$MCMC) - minsize,
               by = step)
 
