@@ -26,7 +26,13 @@ run_jointai_flex <- function(fun, formula, data, seed = NULL, model_args,
                                    gr_check_args))
   )
 
-  fit$fitted_model$MCMC <- window(fit$fitted_model$MCMC,
+
+  chains <- seq_along(fit$fitted_model$MCMC)
+  if (!is.null(fit$exclude_chains)) {
+    chains <- chains[-fit$exclude_chains]
+  }
+
+  fit$fitted_model$MCMC <- window(fit$fitted_model$MCMC[chains],
                                         start = fit$strt)
   fit$fitted_model
 }
@@ -56,7 +62,7 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
 
     if (any(!is.na(gr_crit_loo))) {
       strt <- min(gr_crit_loo, na.rm = TRUE)
-      exclude_chains = which.min(gr_crit_loo)
+      exclude_chains <- which.min(gr_crit_loo)
     } else {
       # if the chains have not yet converged, add more iterations
       counter <- 0
@@ -78,7 +84,7 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
 
           if (any(!is.na(gr_crit_loo))) {
             strt <- min(gr_crit_loo, na.rm = TRUE)
-            exclude_chains = which.min(gr_crit_loo)
+            exclude_chains <- which.min(gr_crit_loo)
           } else {
             strt <- start(fitted_model$MCMC)
             exclude_chains <- NULL
@@ -89,7 +95,8 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
     }
   }
 
-  list(fitted_model = fitted_model, strt = strt)
+  list(fitted_model = fitted_model, strt = strt,
+       exclude_chains = exclude_chains)
 }
 
 
