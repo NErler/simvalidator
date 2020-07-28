@@ -31,18 +31,27 @@ get_result_default <- function(fitted_model, type = NA, seed = NA, ...) {
 #'                extracted
 #' @param ... optional additional arguments for compatibility with other
 #'            `get_result_<...>` functions
+#' @param subset subset specification of `JointAI::coef()`,
+#'               `JointAI::confint()`, `JointAI::GR_crit` and
+#'               `JointAI::MC_error()`
 #' @export
-get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L, ...) {
-  smry <- summary(fitted_model)$res[[outcome]]$regcoef
-  resparts <- c('Mean', '2.5%', '97.5%', 'GR-crit', 'MCE/SD')
+get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L,
+                               subset = NULL, ...) {
 
-
+  # smry <- summary(fitted_model)$res[[outcome]]$regcoef
+  # resparts <- c('Mean', '2.5%', '97.5%', 'GR-crit', 'MCE/SD')
   res <- data.frame(
     seed = seed,
     time = as.numeric(fitted_model$comp_info$duration, units = "hours"),
     type = 'JointAI',
-    variable = rownames(smry),
-    smry[, resparts[resparts %in% colnames(smry)]],
+    variable = names(coef(fitted_model, subset = subset)[[outcome]]),
+    Mean = coef(fitted_model, subset = subset)[[outcome]],
+    confint(fitted_model, subset = subset)[[outcome]],
+    "GR-crit" = JointAI::GR_crit(fitted_model, subset = subset,
+                                 autoburnin = FALSE,
+                                 multivariate = FALSE)[[1]][, 2],
+    "MCE/SD" = JointAI::MC_error(fitted_model,
+                                 subset = subset)$data_scale[, "MCSE/SD"],
     check.names = FALSE
   )
 
