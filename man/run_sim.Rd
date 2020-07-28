@@ -4,7 +4,14 @@
 \alias{run_sim}
 \title{Run simulation}
 \usage{
-run_sim(sim_params, covar_def, data_params, models, path = NULL)
+run_sim(
+  sim_params,
+  covar_def,
+  data_params,
+  models,
+  path = NULL,
+  packages = NULL
+)
 }
 \arguments{
 \item{sim_params}{list of simulation parameters}
@@ -17,6 +24,9 @@ run_sim(sim_params, covar_def, data_params, models, path = NULL)
 
 \item{path}{where to save the results (file name will be generated
 automatically)}
+
+\item{packages}{optional character vector of packages passed to \code{.packages}
+in \code{foreach::foreach}}
 }
 \description{
 Run simulation

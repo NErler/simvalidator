@@ -4,7 +4,7 @@
 \alias{run_jointai_flex}
 \title{Run a JointAI model with flexible number of iterations}
 \usage{
-run_jointai_flex(fun, model_args, gr_check_args, ...)
+run_jointai_flex(fun, formula, data, model_args, gr_check_args, ...)
 }
 \arguments{
 \item{fun}{JointAI model function}
