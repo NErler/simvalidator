@@ -32,7 +32,9 @@ get_result_default <- function(fitted_model, type = NA, seed = NA, ...) {
 #' @param ... optional additional arguments for compatibility with other
 #'            `get_result_<...>` functions
 #' @export
-get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L, ...) {
+get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L,
+                               subset = NULL, ...) {
+
   smry <- summary(fitted_model)$res[[outcome]]$regcoef
   resparts <- c('Mean', '2.5%', '97.5%', 'GR-crit', 'MCE/SD')
 
@@ -43,6 +45,8 @@ get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L, ...) {
     type = 'JointAI',
     variable = rownames(smry),
     smry[, resparts[resparts %in% colnames(smry)]],
+    n_iter = nrow(fitted_model$MCMC[[1]]),
+    n_chain = length(fitted_model$MCMC),
     check.names = FALSE
   )
 
