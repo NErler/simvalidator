@@ -41,7 +41,7 @@ run_jointai_flex <- function(fun, formula, data, seed = NULL, model_args,
 
 run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
                          step = 200L, subset = NULL, cutoff = 1.2, prop = 0.8,
-                         max_try = 5L) {
+                         gr_max = 1.5, max_try = 5L) {
 
   if (is.null(n.iter)) {
     n.iter <- fitted_model$mcmc_settings$n.iter
@@ -105,7 +105,7 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
 
 
 check_gr_crit <- function(model, minsize = 500L, step = 200L, subset = NULL,
-                          cutoff = 1.2, prop = 0.8) {
+                          cutoff = 1.2, prop = 0.8, gr_max = 1.5) {
 
   grid <- seq(from = start(model$MCMC) + minsize,
               to = end(model$MCMC) - minsize,
@@ -119,15 +119,16 @@ check_gr_crit <- function(model, minsize = 500L, step = 200L, subset = NULL,
 
   gr <- do.call(rbind, gr)
 
-  if (any(rowMeans(gr < cutoff) > prop)) {
-    grid[min(which(rowMeans(gr < cutoff) > prop))]
+  if (any(rowMeans(gr < cutoff) > prop & apply(gr, 1, max) < gr_max)) {
+    grid[min(which(rowMeans(gr < cutoff) > prop & apply(gr, 1, max) < gr_max))]
   } else {
     NA
   }
 }
 
 check_gr_crit_loo <- function(model, minsize = 500L, step = 200L,
-                              subset = NULL, cutoff = 1.2, prop = 0.8) {
+                              subset = NULL, cutoff = 1.2, prop = 0.8,
+                              gr_max = 1.5) {
 
   grid <- seq(from = start(model$MCMC) + minsize,
               to = end(model$MCMC) - minsize,
@@ -141,8 +142,8 @@ check_gr_crit_loo <- function(model, minsize = 500L, step = 200L,
     })
     gr <- do.call(rbind, gr)
 
-    if (any(rowMeans(gr < cutoff) > prop)) {
-      grid[min(which(rowMeans(gr < cutoff) > prop))]
+    if (any(rowMeans(gr < cutoff) > prop & apply(gr, 1, max) < gr_max)) {
+      grid[min(which(rowMeans(gr < cutoff) > prop & apply(gr, 1, max) < gr_max))]
     } else {
       NA
     }
