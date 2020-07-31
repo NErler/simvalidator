@@ -183,11 +183,10 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
   cens_times <- runif(length(true_times), 0L, 2L * mean_cens)
 
   surv_data[, all.vars(formula$surv[[2L]])] <-
-    cbind(pmin(true_times, cens_times),
-          as.numeric(true_times <= cens_times))
+    cbind(pmin(true_times, cens_times), true_times <= cens_times)
 
   surv_data[, all.vars(formula$surv[[2L]])[2]] <-
-    factor(surv_data[, all.vars(formula$surv[[2L]])[2]])
+    as.logical(surv_data[, all.vars(formula$surv[[2L]])[2]])
 
   # merge the survival outcome with the longitudinal data
   if (no_subset) {
