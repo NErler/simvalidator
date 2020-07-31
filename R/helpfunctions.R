@@ -3,22 +3,57 @@ errormsg <- function(x, ...) {
 }
 
 
+nlapply <- function(x, fun, ...) {
+  # a named version of lapply, intended to replace sapply(..., simplify = FALSE)
+
+  l <- lapply(x, fun, ...)
+  if (is.null(names(l)))
+    if (!is.null(names(x))) {
+      names(l) <- names(x)
+    } else if (is.character(x)) {
+      names(l) <- x
+    }
+  l
+}
+
+lvapply <- function(x, fun, ...) {
+  vapply(x, fun, FUN.VALUE = logical(1L), ..., USE.NAMES = TRUE)
+}
+
+cvapply <- function(x, fun, ...) {
+  vapply(x, fun, FUN.VALUE = character(1L), ..., USE.NAMES = TRUE)
+}
+
+ivapply <- function(x, fun, ...) {
+  vapply(x, fun, FUN.VALUE = integer(1L), ..., USE.NAMES = TRUE)
+}
+
 
 check_coef_mat <- function(reg_coefs, desgn_mat) {
   if (!is.null(names(reg_coefs)) &
       any(is.na(match(colnames(desgn_mat), names(reg_coefs))))) {
     errormsg("The names of the coefficients do not match the names of the
              design matrix. The names of the design matrix are %s.",
-             colnames(desgn_mat))
+             paste0(colnames(desgn_mat), collapse = ", "))
   } else if (is.null(names(reg_coefs))) {
     if (length(reg_coefs) != ncol(desgn_mat)) {
       errormsg("You have provided %s regression coefficients, but the design
-               matrix has %s columns.", length(reg_coefs), ncol(desgn_mat))
+               matrix has %s columns (%s).", length(reg_coefs), ncol(desgn_mat),
+               paste0(colnames(desgn_mat), collapse = ", "))
     } else {
       names(reg_coefs) <- colnames(desgn_mat)
     }
   }
   reg_coefs
+}
+
+select_coefs <- function(reg_coefs, desgn_mat) {
+  if (is.null(names(reg_coefs)) | is.null(colnames(desgn_mat))) {
+    errormsg("%s requires a named vector of regression coefficients and a
+    design matrix with column names.", dQuote("select_coefs()"))
+  }
+
+  reg_coefs[na.omit(match(colnames(desgn_mat), names(reg_coefs)))]
 }
 
 
