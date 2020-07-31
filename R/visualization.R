@@ -25,7 +25,7 @@ vis_basehaz <- function(knot_range,
 
 
 viz_survdat <- function(data) {
-  mdat <- list(true_times = attr(data, "true_times"),
+  dat_list <- list(true_times = attr(data, "true_times"),
                cens_times = attr(data, "cens_times"),
                obs_times = if (!is.null(attr(data, "timevar"))) {
                  data$etime[!duplicated(data$id)]
@@ -33,11 +33,10 @@ viz_survdat <- function(data) {
                tvar_times = if (!is.null(attr(data, "timevar"))) {
                  data[[attr(data, "timevar")]]
                }
-  ) %>%
-    Filter(Negate(is.null), .) %>%
-    reshape2::melt(id.vars = NULL)
+  )
+  mdat <- reshape2::melt(Filter(Negate(is.null), dat_list), id.vars = NULL)
 
   ggplot(mdat, aes(x = value)) +
-    geom_histogram(bins = 30, alpha = 0.5, color = grey(0.4)) +
+    geom_histogram(bins = 30, alpha = 0.5, color = "black") +
     facet_wrap("L1", scales = 'free')
 }
