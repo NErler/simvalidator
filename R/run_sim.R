@@ -6,10 +6,11 @@
 #' @param models list of model specifications
 #' @param path where to save the results (file name will be generated
 #'             automatically)
+#' @param packages packages to be supplied to `foreach::foreach`
 #' @export
 #'
 run_sim <- function(sim_params, covar_def, data_params, models,
-                    path = NULL) {
+                    path = NULL, packages = NULL) {
 
   if (!inherits(models, "list")) {
     if (inherits(models, "model_specification")) {
