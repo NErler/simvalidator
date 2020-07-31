@@ -98,7 +98,8 @@ sim_outcome_survival <- function(data, formula, reg_coefs,
   # observed event times, i.e., min(true event times, censoring times)
   cens_times <- runif(nrow(data), 0L, 2L * mean_cens)
   data[, all.vars(formula[[2]])] <- cbind(pmin(true_times, cens_times),
-                                          factor(true_times <= cens_times))
+                                          as.numeric(true_times <= cens_times))
+  data[, all.vars(formula[[2]])[2]] <- factor(data[, all.vars(formula[[2]])[2]])
 
   if (add_info) {
     data$true_times <- true_times
