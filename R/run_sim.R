@@ -61,7 +61,8 @@ run_sim <- function(sim_params, covar_def, data_params, models,
                          machine = Sys.info()["machine"],
                          r_version = R.version.string,
                          cpu = cpu,
-                         future = attr(oplan[[1L]], "call")
+                         future = attr(oplan[[1L]], "call"),
+                         workers = formals(oplan[[1L]])$workers
          )
     ), class = "simulation_result")
 
