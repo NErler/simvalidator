@@ -17,7 +17,9 @@ get_data_info <- function(data, seed, ...) {
   list(seed = seed,
        nrow = nrow(data),
        perc_missing = colMeans(is.na(data)),
-       summary = get_summary(data)
+       summary = get_summary(data),
+       size_orig = attr(data, "size"),
+       nr_tries = attr(data, "nr_tries")
   )
 }
 
