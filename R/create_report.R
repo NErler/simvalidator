@@ -5,10 +5,12 @@
 #' @param ... additional arguments passed to `rmarkdown::render()`
 #' @inheritParams rmarkdown::render
 #' @export
-create_report <- function(object, title = NULL, output_file = "simulation_report",
-                        output_dir = tempdir(), ...) {
+create_report <- function(object, title = NULL,
+                          output_file = "simulation_report",
+                          output_dir = tempdir(), ...) {
 
-  rmarkdown::render("templates/report_template.R",
+  rmarkdown::render(system.file("templates", "report_template.R",
+                                package = "simvalidator"),
                     params = list(object = object),
                     output_file = output_file,
                     output_dir = output_dir, ...)
