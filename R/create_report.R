@@ -8,7 +8,7 @@
 create_report <- function(object, title = NULL, output_file = "simulation_report",
                         output_dir = tempdir(), ...) {
 
-  rmarkdown::render("inst/report_template.R",
+  rmarkdown::render("templates/report_template.R",
                     params = list(object = object),
                     output_file = output_file,
                     output_dir = output_dir, ...)
