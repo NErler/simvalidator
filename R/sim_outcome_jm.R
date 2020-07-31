@@ -37,16 +37,16 @@
 #' @export
 #'
 
-sim_outcome_surv_jm <- function(data, formula, reg_coefs, resid_sd,
-                                beta_Bh0 = NULL, ranef_vcov, type,
-                                timevar = "time",
-                                basehaz_type = "splines",
-                                shape_wb = 1.2, mean_cens = 30.0,
-                                .tries = 5, .up = 500L, up_step = 500L,
-                                knot_range = NULL,
-                                seed = NULL, no_obs_after_event = TRUE,
-                                no_subset = FALSE, progress_bar = FALSE,
-                                ...) {
+sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
+                                    beta_Bh0 = NULL, ranef_vcov, type,
+                                    timevar = "time",
+                                    basehaz_type = "splines",
+                                    shape_wb = 1.2, mean_cens = 30.0,
+                                    .tries = 5, .up = 500L, up_step = 500L,
+                                    knot_range = NULL,
+                                    seed = NULL, no_obs_after_event = TRUE,
+                                    no_subset = FALSE, progress_bar = FALSE,
+                                    ...) {
 
   if (!is.null(seed)) {
     set.seed(seed)
@@ -184,8 +184,7 @@ sim_outcome_surv_jm <- function(data, formula, reg_coefs, resid_sd,
 
   surv_data[, all.vars(formula$surv[[2L]])] <-
     cbind(pmin(true_times, cens_times),
-          as.numeric(true_times <= cens_times))
-  # surv_data$true_times <- true_times
+          factor(true_times <= cens_times))
 
   # merge the survival outcome with the longitudinal data
   if (no_subset) {
