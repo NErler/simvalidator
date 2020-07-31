@@ -6,7 +6,8 @@
 #' @param models list of model specifications
 #' @param path where to save the results (file name will be generated
 #'             automatically)
-#' @param packages packages to be supplied to `foreach::foreach`
+#' @param packages optional character vector of packages passed to `.packages`
+#'                 in `foreach::foreach`
 #' @export
 #'
 run_sim <- function(sim_params, covar_def, data_params, models,
@@ -29,7 +30,8 @@ run_sim <- function(sim_params, covar_def, data_params, models,
   t0 <- Sys.time()
   set.seed(sim_params$global_seed)
   seeds <- sample(1:1e6, size = sim_params$nr_sims)
-  sim_res <- foreach::`%dopar%`(foreach::foreach(seed = seeds), {
+  sim_res <- foreach::`%dopar%`(foreach::foreach(seed = seeds,
+                                                 .packages = packages), {
     data <- sim_data(covar_def, data_params, seed = seed)
     res <- fit_models(models, formula = data_params$formula, data, seed)
 

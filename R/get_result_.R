@@ -38,12 +38,12 @@ get_result_default <- function(fitted_model, type = NA, seed = NA, ...) {
 get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L,
                                subset = NULL, ...) {
 
-  # smry <- summary(fitted_model)$res[[outcome]]$regcoef
-  # resparts <- c('Mean', '2.5%', '97.5%', 'GR-crit', 'MCE/SD')
   res <- data.frame(
     seed = seed,
     time = as.numeric(fitted_model$comp_info$duration, units = "hours"),
     type = 'JointAI',
+    n_iter = nrow(fitted_model$MCMC[[1]]),
+    n_chain = length(fitted_model$MCMC),
     variable = names(coef(fitted_model, subset = subset)[[outcome]]),
     Mean = coef(fitted_model, subset = subset)[[outcome]],
     confint(fitted_model, subset = subset)[[outcome]],

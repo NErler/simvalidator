@@ -22,6 +22,7 @@ fit_models <- function(models, formula, data, seed = NULL) {
     fitted_model <- do.call(models[[k]]$fun,
                             set_args(fun = models[[k]]$fun,
                                      args = c(formula = formula,
+                                              seed = seed,
                                               list(data = data),
                                               models[[k]]$fun_args)
                             )

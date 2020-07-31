@@ -3,17 +3,19 @@
 #' @param fun JointAI model function
 #' @param formula the model formula
 #' @param data a `data.frame`
+#' @param seed the seed value
 #' @param model_args a list of arguments passed to `fun`
 #' @param gr_check_args a list of arguments to be passed to the gr check
 #' @param ... currently not used
 #' @export
-run_jointai_flex <- function(fun, formula, data, model_args,
+run_jointai_flex <- function(fun, formula, data, seed = NULL, model_args,
                              gr_check_args, ...) {
 
   fitted_model <- do.call(fun,
                           set_args(fun = fun,
                                    args = c(formula = formula,
                                             list(data = data),
+                                            seed = seed,
                                             model_args)
                           )
   )
@@ -24,7 +26,13 @@ run_jointai_flex <- function(fun, formula, data, model_args,
                                    gr_check_args))
   )
 
-  fit$fitted_model$MCMC <- window(fit$fitted_model$MCMC,
+
+  chains <- seq_along(fit$fitted_model$MCMC)
+  if (!is.null(fit$exclude_chains)) {
+    chains <- chains[-fit$exclude_chains]
+  }
+
+  fit$fitted_model$MCMC <- window(fit$fitted_model$MCMC[chains],
                                         start = fit$strt)
   fit$fitted_model
 }
@@ -33,7 +41,7 @@ run_jointai_flex <- function(fun, formula, data, model_args,
 
 run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
                          step = 200L, subset = NULL, cutoff = 1.2, prop = 0.8,
-                         max_try = 5L) {
+                         gr_max = 1.5, max_try = 5L) {
 
   if (is.null(n.iter)) {
     n.iter <- fitted_model$mcmc_settings$n.iter
@@ -54,7 +62,7 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
 
     if (any(!is.na(gr_crit_loo))) {
       strt <- min(gr_crit_loo, na.rm = TRUE)
-      exclude_chains = which.min(gr_crit_loo)
+      exclude_chains <- which.min(gr_crit_loo)
     } else {
       # if the chains have not yet converged, add more iterations
       counter <- 0
@@ -76,7 +84,7 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
 
           if (any(!is.na(gr_crit_loo))) {
             strt <- min(gr_crit_loo, na.rm = TRUE)
-            exclude_chains = which.min(gr_crit_loo)
+            exclude_chains <- which.min(gr_crit_loo)
           } else {
             strt <- start(fitted_model$MCMC)
             exclude_chains <- NULL
@@ -87,7 +95,8 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
     }
   }
 
-  list(fitted_model = fitted_model, strt = strt)
+  list(fitted_model = fitted_model, strt = strt,
+       exclude_chains = exclude_chains)
 }
 
 
@@ -96,9 +105,9 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
 
 
 check_gr_crit <- function(model, minsize = 500L, step = 200L, subset = NULL,
-                          cutoff = 1.2, prop = 0.8) {
+                          cutoff = 1.2, prop = 0.8, gr_max = 1.5) {
 
-  grid <- seq(from = start(model$MCMC) + minsize,
+  grid <- seq(from = start(model$MCMC),
               to = end(model$MCMC) - minsize,
               by = step)
 
@@ -110,17 +119,18 @@ check_gr_crit <- function(model, minsize = 500L, step = 200L, subset = NULL,
 
   gr <- do.call(rbind, gr)
 
-  if (any(rowMeans(gr < cutoff) > prop)) {
-    grid[min(which(rowMeans(gr < cutoff) > prop))]
+  if (any(rowMeans(gr < cutoff) > prop & apply(gr, 1, max) < gr_max)) {
+    grid[min(which(rowMeans(gr < cutoff) > prop & apply(gr, 1, max) < gr_max))]
   } else {
     NA
   }
 }
 
 check_gr_crit_loo <- function(model, minsize = 500L, step = 200L,
-                              subset = NULL, cutoff = 1.2, prop = 0.8) {
+                              subset = NULL, cutoff = 1.2, prop = 0.8,
+                              gr_max = 1.5) {
 
-  grid <- seq(from = start(model$MCMC) + minsize,
+  grid <- seq(from = start(model$MCMC),
               to = end(model$MCMC) - minsize,
               by = step)
 
@@ -132,8 +142,8 @@ check_gr_crit_loo <- function(model, minsize = 500L, step = 200L,
     })
     gr <- do.call(rbind, gr)
 
-    if (any(rowMeans(gr < cutoff) > prop)) {
-      grid[min(which(rowMeans(gr < cutoff) > prop))]
+    if (any(rowMeans(gr < cutoff) > prop & apply(gr, 1, max) < gr_max)) {
+      grid[min(which(rowMeans(gr < cutoff) > prop & apply(gr, 1, max) < gr_max))]
     } else {
       NA
     }

@@ -4,7 +4,15 @@
 \alias{run_jointai_flex}
 \title{Run a JointAI model with flexible number of iterations}
 \usage{
-run_jointai_flex(fun, formula, data, model_args, gr_check_args, ...)
+run_jointai_flex(
+  fun,
+  formula,
+  data,
+  seed = NULL,
+  model_args,
+  gr_check_args,
+  ...
+)
 }
 \arguments{
 \item{fun}{JointAI model function}
@@ -12,6 +20,8 @@ run_jointai_flex(fun, formula, data, model_args, gr_check_args, ...)
 \item{formula}{the model formula}
 
 \item{data}{a \code{data.frame}}
+
+\item{seed}{the seed value}
 
 \item{model_args}{a list of arguments passed to \code{fun}}
 
