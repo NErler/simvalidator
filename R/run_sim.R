@@ -65,7 +65,7 @@ run_sim <- function(sim_params, covar_def, data_params, models,
          )
     ), class = "simulation_result")
 
-  if (!is.null(path)) {
+  if (exists("path") && !is.null(path)) {
     save(out, file = file.path(path, file_name))
   }
 
