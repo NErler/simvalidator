@@ -83,7 +83,11 @@ print.simulation_result <- function(x,
   cat("Simulation of", x$sim_params$nr_sims, "datasets with a",
       x$data_params$response_type, "outcome.\n")
   cat(" - Computational time:",
-      round(x$time, digits), attr(x$time, "units"), "\n")
+      round(x$time, digits), attr(x$time, "units"),
+      if (!is.null(x$platform$workers)) {
+        paste0("(", x$platform$workers, " workers)")
+      },
+      "\n")
   cat(" - global seed:", x$sim_params$global_seed, "\n")
 
   cat("\nModels fitted:\n")
