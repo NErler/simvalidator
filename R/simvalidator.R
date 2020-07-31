@@ -5,7 +5,7 @@
 #' @import graphics
 #' @import utils
 #' @import stats
-#'
+#' @import ggplot2
 #'
 #' @docType package
 #' @name simvalidator
@@ -13,4 +13,4 @@ NULL
 
 
 
-utils::globalVariables(c("seed"))
+utils::globalVariables(c("seed", "value"))

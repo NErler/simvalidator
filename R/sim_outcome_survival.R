@@ -5,29 +5,36 @@
 #'                  will be matched with the names of the design matrix that
 #'                  is created from `formula` and `data`.
 #' @param shape_wb parameter of the Wishart distribution
+#' @param beta_Bh0 vector of coefficients for a spline specification of the
+#'                 baseline hazard
 #' @param mean_cens mean censoring time
 #' @param .tries integer; how often is the upper limit increased when looking
 #'               for the root
+#' @param basehaz_type character string specifying the type of baseline hazard:
+#'                     `weibull` or `spline`
+#' @param knot_range range of the knots for a spline baseline hazard
+#' @param .up upper limit for the integration over the hazard
+#' @param up_step step with which `.up` is increased in case of failure
 #' @param seed the seed value
+#' @param add_info logical: should the simulated `true_times`, `cens_times` and
+#'                 `lin_pred` be added as columns to the data
 #' @param ... arguments passed to other functions
 #'
+#' @export
 sim_outcome_survival <- function(data, formula, reg_coefs,
                                  basehaz_type = "spline",
                                  beta_Bh0 = NULL, shape_wb = NULL,
                                  knot_range = NULL,
                                  mean_cens = 30.0,
                                  .tries = 5L, .up = 5000L,
-                                 step_up = 5000L, seed = NULL,
-                                 add_info = NULL, ...) {
+                                 up_step = 5000L, seed = NULL,
+                                 add_info = FALSE, ...) {
 
   if (!is.null(seed)) {
     set.seed(seed)
   }
 
   desgn_mat <- model_matrix(formula[-2], data = data)
-  reg_coefs <- check_coef_mat(reg_coefs, desgn_mat)
-
-
 
   if (basehaz_type == "spline") {
     desgn_mat <- desgn_mat[, -1L]
@@ -35,11 +42,11 @@ sim_outcome_survival <- function(data, formula, reg_coefs,
                        Time = knot_range[1]:knot_range[2],
                        gkx = gauss_kronrod()$gkx)
     kn[length(kn)] <- 100 * kn[length(kn)]
-
   }
 
 
   # linear predictor
+  reg_coefs <- check_coef_mat(reg_coefs, desgn_mat)
   lin_pred <- as.vector(desgn_mat %*% reg_coefs[colnames(desgn_mat)])
 
 
@@ -69,7 +76,7 @@ sim_outcome_survival <- function(data, formula, reg_coefs,
                         interval = c(1.0e-05, up), u = u[i], i = i)$root, TRUE)
     while (inherits(root, "try-error") && tries < .tries) {
       tries <- tries + 1L
-      up <- up + step_up
+      up <- up + up_step
       root <- try(uniroot(inv_survival, interval = c(1.0e-05, up),
                           u = u[i], i = i)$root, TRUE)
     }

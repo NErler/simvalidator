@@ -33,6 +33,8 @@ should be written (the default output directory of that of the input file).
 If a path is provided with a filename in \code{output_file} the directory
 specified here will take precedence. Please note that any directory path
 provided will create any necessary directories if they do not exist.}
+
+\item{...}{additional arguments passed to \code{rmarkdown::render()}}
 }
 \description{
 Create a html report of a simulation result using rmarkdown

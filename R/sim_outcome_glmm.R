@@ -15,6 +15,8 @@
 #' @param type named vector of model types. Available model types are
 #'             "gaussian", "binomial", "Gamma", and "poisson".
 #' @param seed the seed value
+#' @param return_ranefs logical; should the random effects be returned?
+#'                      If `TRUE`, a list with `data` and `ranefs` is returned.
 #' @param ... arguments passed to other functions
 #'
 #' @export
@@ -23,52 +25,56 @@
 #' # Bivariate outcome in a multi-level setting
 #'
 #'
-#' covar_data <- function(N, J) {
-#'   merge(
-#'     # subject level information
-#'     data.frame(id = 1:N,
-#'                center = rep(1:J, each = N/2),
-#'                age = rnorm(N, 60, 10),
-#'                sex = factor(rbinom(N, size = 1, prob = 0.5))),
-#'     # repeated measurements
-#'     data.frame(id = rep(1:N, each = J),
-#'                time = runif(J * N, 0, 5)
-#'     )
-#'   )
-#' }
+# covar_data <- function(N, J) {
+#   merge(
+#     # subject level information
+#     data.frame(id = 1:N,
+#                center = rep(1:J, each = N/2),
+#                age = rnorm(N, 60, 10),
+#                sex = factor(rbinom(N, size = 1, prob = 0.5))),
+#     # repeated measurements
+#     data.frame(id = rep(1:N, each = J),
+#                time = runif(J * N, 0, 5)
+#     )
+#   )
+# }
 #'
-#' ranef_vcov <- list(id = Matrix::bdiag(
-#'   matrix(nrow = 2, ncol = 2, data = c(2, 0.5, 0.5, 1),
-#'          dimnames = list(c('int', 'time'), c('int', 'time'))),
-#'   matrix(nrow = 3, ncol = 3, data = c(  2,  0.5,  0.1,
-#'                                         0.5, 1.5, -0.2,
-#'                                         0.1, -0.2,  1),
-#'          dimnames = list(c('int', 'time1', "time2"), c('int', 'time1', 'time2')))
-#' ),
-#' center = matrix(nrow = 2, ncol = 2, data = 0.2,
-#'                 dimnames = list(c('int', 'int'), c('int', 'int')))
-#' )
+# ranef_vcov <- list(id = Matrix::bdiag(
+#   matrix(nrow = 2, ncol = 2, data = c(2, 0.5, 0.5, 1),
+#          dimnames = list(c('int', 'time'), c('int', 'time'))),
+#   matrix(nrow = 3, ncol = 3, data = c(  2,  0.5,  0.1,
+#                                         0.5, 1.5, -0.2,
+#                                         0.1, -0.2,  1),
+#          dimnames = list(c('int', 'time1', "time2"), c('int', 'time1', 'time2')))
+# ),
+# center = matrix(nrow = 2, ncol = 2, data = 0.2,
+#                 dimnames = list(c('int', 'int'), c('int', 'int')))
+# )
 #'
 #'
-#' formula <- list(x1 ~ age + sex + time + (time | id) + (1 | center),
-#'                 x2 ~ age + x1 + sex + ns(time, df = 2) + (ns(time, df = 2) | id) +
-#'                   (1 | center)
-#' )
+# formula <- list(x1 ~ age + sex + time + (time | id) + (1 | center),
+#                 x2 ~ age + x1 + sex + ns(time, df = 2) + (ns(time, df = 2) | id) +
+#                   (1 | center)
+# )
 #'
-#' reg_coefs = list(x1 = c(1:4),
-#'                  x2 = c(-100,  2, -0.01, -3, -2, -1))
-#' sim_outcome_glmm(data = covar_data(N = 50, J = 2),
-#'                  formula = formula,
-#'                  reg_coefs = reg_coefs,
-#'                  resid_sd = c(x1 = 0.5),
-#'                  ranef_vcov = ranef_vcov,
-#'                  type = c(x1 = "gaussian", x2 = "binomial"))
+# reg_coefs = list(x1 = c(1:4),
+#                  x2 = c(-100,  2, -0.01, -3, -2, -1))
+# sim_outcome_glmm(data = covar_data(N = 50, J = 2),
+#                  formula = formula,
+#                  reg_coefs = reg_coefs,
+#                  resid_sd = c(x1 = 0.5),
+#                  ranef_vcov = ranef_vcov,
+#                  type = c(x1 = "gaussian", x2 = "binomial"))
 
 
 
 sim_outcome_glmm <- function(data, formula, reg_coefs, resid_sd = NULL,
                              ranef_vcov, type = "gaussian",
-                             return_ranefs = FALSE, ranefs = NULL, ...) {
+                             return_ranefs = FALSE, seed = NULL, ...) {
+
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
 
   # model formulas
   formula <- split_formula_list(check_formula_list(formula))
@@ -91,16 +97,15 @@ sim_outcome_glmm <- function(data, formula, reg_coefs, resid_sd = NULL,
   })
 
 
-  if (is.null(ranefs)) {
-    # random effects
-    # groups
-    idvars <- extract_id(formula$random)
-    groups <- get_groups(idvars, data)
+  # random effects
+  # groups
+  idvars <- extract_id(formula$random)
+  groups <- get_groups(idvars, data)
 
-    n_ranefs <- ivapply(groups, function(x)  length(unique(x)))
-    ranefs <- replicate_ranefs(sim_ranefs(ranef_vcov, n_ranefs), groups)
-    ranefs <- split_ranefs(ranefs, desgn_mat_random, idvars)
-  }
+  n_ranefs <- ivapply(groups, function(x)  length(unique(x)))
+  ranefs <- replicate_ranefs(sim_ranefs(ranef_vcov, n_ranefs), groups)
+  ranefs <- split_ranefs(ranefs, desgn_mat_random, idvars)
+
 
   for (k in names(fmla_fixed)) {
 
@@ -133,9 +138,9 @@ sim_outcome_glmm <- function(data, formula, reg_coefs, resid_sd = NULL,
 
 
 
-sim_outcome_glmm2 <- function(data, fmla_fixed, fmla_random,
-                              reg_coefs, resid_sd = NULL,
-                              type = "gaussian", ranefs, ...) {
+sim_linpred_glmm <- function(data, fmla_fixed, fmla_random,
+                             reg_coefs, resid_sd = NULL,
+                             type = "gaussian", ranefs, ...) {
 
   # random effects linear predictor
   desgn_mat_random <- lapply(fmla_random, function(fmla) {
@@ -161,10 +166,8 @@ sim_outcome_glmm2 <- function(data, fmla_fixed, fmla_random,
     # combine fixed and random effects
     linpred <- rowSums(do.call(cbind, c(list(linpred_fixed), linpred_random)))
     data[[k]] <- linpred
-
-    # data[[k]] <- sample_glm_resp(type[[k]], linpred, resid_sd[[k]])
   }
 
-    data
+  data
 }
 

@@ -9,11 +9,29 @@
 #' @param ranef_vcov a random effects variance-covariance matrix or a named
 #'                   list of such matrices when there are more than two levels
 #'                   (and names being equal to the grouping variables)
-#' @param phi parameter of the Wishart distribution
+#' @param resid_sd vector of residual standard deviations for longitudinal
+#'                 outcomes
+#' @param type vector of type specifications for longitudinal outcomes
+#' @param timevar character string giving the variable name of the time
+#'                variable for the longitudinal outcome. Should be different
+#'                from the name of the survival time variable.
+#' @param shape_wb shape parameter of the weibull distribution
+#' @param beta_Bh0 vector of coefficients for a spline specification of the
+#'                 baseline hazard
 #' @param mean_cens mean censoring time
+#' @param basehaz_type character string specifying the type of baseline hazard:
+#'                     `weibull` or `spline`
+#' @param knot_range range of the knots for a spline baseline hazard
+#' @param .up upper limit for the integration over the hazard
+#' @param up_step step with which `.up` is increased in case of failure
 #' @param .tries integer; how often is the upper limit increased when looking
 #'               for the root
 #' @param seed the seed value
+#' @param no_obs_after_event logical; should observations of the longitudinal
+#'                           outcome with times after the corresponding event/
+#'                           censoring time be removed?
+#' @param no_subset logical; used for "debugging"
+#' @param progress_bar logical: should a progress bar be displayed
 #' @param ... arguments passed to other functions
 #'
 #' @export
@@ -23,8 +41,9 @@ sim_outcome_surv_jm <- function(data, formula, reg_coefs, resid_sd,
                                 beta_Bh0 = NULL, ranef_vcov, type,
                                 timevar = "time",
                                 basehaz_type = "splines",
-                                phi = 1.2, mean_cens = 30.0,
+                                shape_wb = 1.2, mean_cens = 30.0,
                                 .tries = 5, .up = 500L, up_step = 500L,
+                                knot_range = NULL,
                                 seed = NULL, no_obs_after_event = TRUE,
                                 no_subset = FALSE, progress_bar = FALSE,
                                 ...) {
@@ -64,11 +83,10 @@ sim_outcome_surv_jm <- function(data, formula, reg_coefs, resid_sd,
 
   if (basehaz_type == "spline") {
     desgn_mat_surv_tconst <- desgn_mat_surv_tconst[, -1L]
-    kn <- get_knots_h0(nkn = 2,
-                       Time = 0:(mean_cens * 4),
+    kn <- get_knots_h0(nkn = length(beta_Bh0) - 4,
+                       Time = knot_range[1]:knot_range[2],
                        gkx = gauss_kronrod()$gkx)
     kn[length(kn)] <- 100 * kn[length(kn)]
-
   }
 
   lp_surv_tconst <- desgn_mat_surv_tconst %*%
@@ -93,17 +111,17 @@ sim_outcome_surv_jm <- function(data, formula, reg_coefs, resid_sd,
       temp_data <- data[rows, , drop = FALSE]
       temp_data[[timevar]] <- times
 
-      temp_data <- sim_outcome_glmm2(data = temp_data,
-                                     fmla_fixed = fmla_fixed,
-                                     fmla_random = fmla_random,
-                                     reg_coefs = reg_coefs$long,
-                                     resid_sd = resid_sd,
-                                     type = type,
-                                     ranefs = lapply(ranefs, function(v) {
-                                       lapply(v, function(lvl) {
-                                         lvl[rows, , drop = FALSE]
-                                       })
-                                     })
+      temp_data <- sim_linpred_glmm(data = temp_data,
+                                    fmla_fixed = fmla_fixed,
+                                    fmla_random = fmla_random,
+                                    reg_coefs = reg_coefs$long,
+                                    resid_sd = resid_sd,
+                                    type = type,
+                                    ranefs = lapply(ranefs, function(v) {
+                                      lapply(v, function(lvl) {
+                                        lvl[rows, , drop = FALSE]
+                                      })
+                                    })
       )
 
       desgn_mat_surv_tvar <- model_matrix(fmla_surv$tvar, temp_data)
@@ -112,15 +130,11 @@ sim_outcome_surv_jm <- function(data, formula, reg_coefs, resid_sd,
 
 
       if (basehaz_type == "weibull") {
-        exp(log(phi) + (phi - 1L) * log(times) +
+        exp(log(shape_wb) + (shape_wb - 1L) * log(times) +
               as.vector(lp_surv_tconst) + as.vector(lp_surv_tvar))
       } else if (basehaz_type == "spline") {
         desgn_mat_basehaz <- splines::splineDesign(kn, times, ord = 4L,
                                                    outer.ok = TRUE)
-
-        # if (tries > 1){
-        #   plot(times, desgn_mat_basehaz %*% beta_Bh0)
-        # }
 
         exp(c(desgn_mat_basehaz %*% beta_Bh0) +
               as.vector(lp_surv_tconst)[i] + as.vector(lp_surv_tvar))

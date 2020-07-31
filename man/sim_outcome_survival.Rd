@@ -8,12 +8,16 @@ sim_outcome_survival(
   data,
   formula,
   reg_coefs,
-  phi = 1.2,
+  basehaz_type = "spline",
+  beta_Bh0 = NULL,
+  shape_wb = NULL,
+  knot_range = NULL,
   mean_cens = 30,
   .tries = 5L,
   .up = 5000L,
-  step_up = 5000L,
+  up_step = 5000L,
   seed = NULL,
+  add_info = FALSE,
   ...
 )
 }
@@ -26,14 +30,29 @@ sim_outcome_survival(
 will be matched with the names of the design matrix that
 is created from \code{formula} and \code{data}.}
 
-\item{phi}{parameter of the Wishart distribution}
+\item{basehaz_type}{character string specifying the type of baseline hazard:
+\code{weibull} or \code{spline}}
+
+\item{beta_Bh0}{vector of coefficients for a spline specification of the
+baseline hazard}
+
+\item{shape_wb}{parameter of the Wishart distribution}
+
+\item{knot_range}{range of the knots for a spline baseline hazard}
 
 \item{mean_cens}{mean censoring time}
 
 \item{.tries}{integer; how often is the upper limit increased when looking
 for the root}
 
+\item{.up}{upper limit for the integration over the hazard}
+
+\item{up_step}{step with which \code{.up} is increased in case of failure}
+
 \item{seed}{the seed value}
+
+\item{add_info}{logical: should the simulated \code{true_times}, \code{cens_times} and
+\code{lin_pred} be added as columns to the data}
 
 \item{...}{arguments passed to other functions}
 }

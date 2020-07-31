@@ -2,6 +2,7 @@
 #' Create a html report of a simulation result using rmarkdown
 #' @param object `simulation_result` object
 #' @param title not yet used
+#' @param ... additional arguments passed to `rmarkdown::render()`
 #' @inheritParams rmarkdown::render
 #' @export
 create_report <- function(object, title = NULL, output_file = "simulation_report",

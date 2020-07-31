@@ -12,7 +12,7 @@ sim_outcome_glmm(
   ranef_vcov,
   type = "gaussian",
   return_ranefs = FALSE,
-  ranefs = NULL,
+  seed = NULL,
   ...
 )
 }
@@ -38,9 +38,12 @@ list of such matrices when there are more than two levels
 \item{type}{named vector of model types. Available model types are
 "gaussian", "binomial", "Gamma", and "poisson".}
 
-\item{...}{arguments passed to other functions}
+\item{return_ranefs}{logical; should the random effects be returned?
+If \code{TRUE}, a list with \code{data} and \code{ranefs} is returned.}
 
 \item{seed}{the seed value}
+
+\item{...}{arguments passed to other functions}
 }
 \description{
 Simulate a (multivariate) longitudinal outcome
@@ -49,44 +52,8 @@ Simulate a (multivariate) longitudinal outcome
 # Bivariate outcome in a multi-level setting
 
 
-covar_data <- function(N, J) {
-  merge(
-    # subject level information
-    data.frame(id = 1:N,
-               center = rep(1:J, each = N/2),
-               age = rnorm(N, 60, 10),
-               sex = factor(rbinom(N, size = 1, prob = 0.5))),
-    # repeated measurements
-    data.frame(id = rep(1:N, each = J),
-               time = runif(J * N, 0, 5)
-    )
-  )
-}
-
-ranef_vcov <- list(id = Matrix::bdiag(
-  matrix(nrow = 2, ncol = 2, data = c(2, 0.5, 0.5, 1),
-         dimnames = list(c('int', 'time'), c('int', 'time'))),
-  matrix(nrow = 3, ncol = 3, data = c(  2,  0.5,  0.1,
-                                        0.5, 1.5, -0.2,
-                                        0.1, -0.2,  1),
-         dimnames = list(c('int', 'time1', "time2"), c('int', 'time1', 'time2')))
-),
-center = matrix(nrow = 2, ncol = 2, data = 0.2,
-                dimnames = list(c('int', 'int'), c('int', 'int')))
-)
 
 
-formula <- list(x1 ~ age + sex + time + (time | id) + (1 | center),
-                x2 ~ age + x1 + sex + ns(time, df = 2) + (ns(time, df = 2) | id) +
-                  (1 | center)
-)
 
-reg_coefs = list(x1 = c(1:4),
-                 x2 = c(-100,  2, -0.01, -3, -2, -1))
-sim_outcome_glmm(data = covar_data(N = 50, J = 2),
-                 formula = formula,
-                 reg_coefs = reg_coefs,
-                 resid_sd = c(x1 = 0.5),
-                 ranef_vcov = ranef_vcov,
-                 type = c(x1 = "gaussian", x2 = "binomial"))
+
 }

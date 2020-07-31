@@ -14,13 +14,16 @@ sim_outcome_surv_jm(
   type,
   timevar = "time",
   basehaz_type = "splines",
-  phi = 1.2,
+  shape_wb = 1.2,
   mean_cens = 30,
   .tries = 5,
   .up = 500L,
   up_step = 500L,
+  knot_range = NULL,
   seed = NULL,
   no_obs_after_event = TRUE,
+  no_subset = FALSE,
+  progress_bar = FALSE,
   ...
 )
 }
@@ -35,18 +38,47 @@ outcomes}
 If named, the names will be matched with the names of the
 design matrix that is created from \code{formula} and \code{data}.}
 
+\item{resid_sd}{vector of residual standard deviations for longitudinal
+outcomes}
+
+\item{beta_Bh0}{vector of coefficients for a spline specification of the
+baseline hazard}
+
 \item{ranef_vcov}{a random effects variance-covariance matrix or a named
 list of such matrices when there are more than two levels
 (and names being equal to the grouping variables)}
 
-\item{phi}{parameter of the Wishart distribution}
+\item{type}{vector of type specifications for longitudinal outcomes}
+
+\item{timevar}{character string giving the variable name of the time
+variable for the longitudinal outcome. Should be different
+from the name of the survival time variable.}
+
+\item{basehaz_type}{character string specifying the type of baseline hazard:
+\code{weibull} or \code{spline}}
+
+\item{shape_wb}{shape parameter of the weibull distribution}
 
 \item{mean_cens}{mean censoring time}
 
 \item{.tries}{integer; how often is the upper limit increased when looking
 for the root}
 
+\item{.up}{upper limit for the integration over the hazard}
+
+\item{up_step}{step with which \code{.up} is increased in case of failure}
+
+\item{knot_range}{range of the knots for a spline baseline hazard}
+
 \item{seed}{the seed value}
+
+\item{no_obs_after_event}{logical; should observations of the longitudinal
+outcome with times after the corresponding event/
+censoring time be removed?}
+
+\item{no_subset}{logical; used for "debugging"}
+
+\item{progress_bar}{logical: should a progress bar be displayed}
 
 \item{...}{arguments passed to other functions}
 }
