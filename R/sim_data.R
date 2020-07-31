@@ -17,9 +17,9 @@ sim_data <- function(covar_def, data_params, seed = NULL) {
              dQuote(out_fun_name), dQuote(data_params$response_type))
   }
 
-  input_data <- eval(covar_def, envir = data_params)
+  input_data <- do.call(covar_def, data_params)
 
   do.call(get(out_fun_name),
-          c(list(dat = input_data), data_params))
+          c(list(dat = input_data), data_params, data_params$other_pars))
 }
 
