@@ -28,9 +28,9 @@ get_res_df <- function(object) {
 
   res_df <- rbind_df_list(lapply(object$sim_res, "[[", "res"))
 
-  res_df <- merge(res_df, regcoef_df)
+  res_df <- merge(res_df, regcoef_df, all.x = TRUE)
 
-  res_df$bias <- res_df$regcoef - res_df$Mean
+  res_df$bias <- res_df$Mean - res_df$regcoef
   res_df$relbias <- res_df$bias/res_df$regcoef
   res_df$covrg <- res_df$`2.5%` < res_df$regcoef & res_df$`97.5%` > res_df$regcoef
   res_df$CIwidth <- res_df$`97.5%` - res_df$`2.5%`
