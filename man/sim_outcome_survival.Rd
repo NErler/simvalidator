@@ -11,6 +11,8 @@ sim_outcome_survival(
   phi = 1.2,
   mean_cens = 30,
   .tries = 5L,
+  .up = 5000L,
+  step_up = 5000L,
   seed = NULL,
   ...
 )
