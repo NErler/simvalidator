@@ -13,8 +13,8 @@ run_jointai_flex <- function(fun, formula, data, seed = NULL, model_args,
 
   fitted_model <- do.call(fun,
                           set_args(fun = fun,
-                                   args = c(formula = formula,
-                                            list(data = data),
+                                   args = c(list(formula = formula,
+                                                 data = data),
                                             seed = seed,
                                             model_args)
                           )
