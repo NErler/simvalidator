@@ -123,9 +123,13 @@ run_gr_check <- function(fitted_model, extra_iter = NULL, minsize = 500L,
 check_gr_crit <- function(model, minsize = 500L, step = 200L, subset = NULL,
                           cutoff = 1.2, prop = 0.8, gr_max = 1.5) {
 
-  grid <- seq(from = start(model$MCMC),
-              to = end(model$MCMC) - minsize,
-              by = step)
+  grid <- if (end(model$MCMC) - minsize - step > 0) {
+    seq(from = start(model$MCMC),
+        to = end(model$MCMC) - minsize,
+        by = step)
+  } else {
+    grid <- start(model$MCMC)
+  }
 
   gr <- lapply(grid, function(k) {
     JointAI::GR_crit(model, subset = subset,
@@ -146,9 +150,14 @@ check_gr_crit_loo <- function(model, minsize = 500L, step = 200L,
                               subset = NULL, cutoff = 1.2, prop = 0.8,
                               gr_max = 1.5) {
 
-  grid <- seq(from = start(model$MCMC),
-              to = end(model$MCMC) - minsize,
-              by = step)
+
+  grid <- if (end(model$MCMC) - minsize - step > 0){
+    seq(from = start(model$MCMC),
+        to = end(model$MCMC) - minsize,
+        by = step)
+  } else {
+    start(model$MCMC)
+  }
 
   vapply(seq_along(model$MCMC), function(chain) {
     gr <- lapply(grid, function(k){
