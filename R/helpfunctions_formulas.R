@@ -350,3 +350,25 @@ model_matrix <- function(formula, data) {
     model.matrix(formula, data)
   }
 }
+
+
+
+
+
+split_surv_long <- function(formula) {
+  is_surv <- lvapply(formula, function(f) {
+    grepl("^Surv\\(", deparse(f[[2]], width.cutoff = 500L))
+  })
+
+  if (sum(is_surv) != 1) {
+    errormsg("I expected one survival formula, but there are %s.",
+             sum(is_surv))
+  }
+
+  long <- formula[!is_surv]
+  names(long) <- cvapply(long, function(x) as.character(x)[2L])
+
+  list(surv = split_formula_list(formula[is_surv])$fixed,
+       long = long
+  )
+}
