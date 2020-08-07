@@ -15,5 +15,5 @@ create_report <- function(object, title = NULL,
                     output_file = output_file,
                     output_dir = output_dir, ...)
 
-  system2("open", file.path(output_dir, "report_template.html"))
+  system2("open", file.path(output_dir, "simulation_report.html"))
 }
