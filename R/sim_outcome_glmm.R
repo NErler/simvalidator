@@ -103,7 +103,9 @@ sim_outcome_glmm <- function(data, formula, reg_coefs, resid_sd = NULL,
   groups <- get_groups(idvars, data)
 
   n_ranefs <- ivapply(groups, function(x)  length(unique(x)))
-  ranefs <- replicate_ranefs(sim_ranefs(ranef_vcov, n_ranefs), groups)
+  ranefs <- replicate_ranefs(
+    sim_ranefs(ranef_vcov, n_ranefs[names(ranef_vcov)]),
+    groups)
   ranefs <- split_ranefs(ranefs, desgn_mat_random, idvars)
 
 
