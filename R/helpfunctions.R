@@ -24,6 +24,10 @@ cvapply <- function(x, fun, ...) {
   vapply(x, fun, FUN.VALUE = character(1L), ..., USE.NAMES = TRUE)
 }
 
+nvapply <- function(x, fun, ...) {
+  vapply(x, fun, FUN.VALUE = numeric(1L), ..., USE.NAMES = TRUE)
+}
+
 ivapply <- function(x, fun, ...) {
   vapply(x, fun, FUN.VALUE = integer(1L), ..., USE.NAMES = TRUE)
 }
