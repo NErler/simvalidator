@@ -4,12 +4,12 @@
 \alias{sim_data}
 \title{Simulate data}
 \usage{
-sim_data(covar_def, data_params, seed = NULL)
+sim_data(covar_def, outcome_pars, seed = NULL)
 }
 \arguments{
 \item{covar_def}{covariate definition}
 
-\item{data_params}{a list of parameters}
+\item{outcome_pars}{a list of parameters}
 
 \item{seed}{a seed value}
 }

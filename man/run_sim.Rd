@@ -5,20 +5,20 @@
 \title{Run simulation}
 \usage{
 run_sim(
-  sim_params,
+  sim_pars,
   covar_def,
-  data_params,
+  outcome_pars,
   models,
   path = NULL,
   packages = NULL
 )
 }
 \arguments{
-\item{sim_params}{list of simulation parameters}
+\item{sim_pars}{list of simulation parameters}
 
 \item{covar_def}{expression defining covariates}
 
-\item{data_params}{list of parameters to create covariates and outcome}
+\item{outcome_pars}{list of parameters to create covariates and outcome}
 
 \item{models}{list of model specifications}
 
