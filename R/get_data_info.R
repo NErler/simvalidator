@@ -25,7 +25,7 @@ get_data_info <- function(data, seed, ...) {
 
 get_summary <- function(data) {
   lapply(data, function(x) {
-    if (inherits(x, "factor")) {
+    if (inherits(x, "factor") | inherits(x, "logical")) {
       as.data.frame(table(x, exclude = NULL))
     } else if (inherits(x, "numeric")) {
       summary(x)
