@@ -1,8 +1,8 @@
 
 #' Run simulation
-#' @param sim_params list of simulation parameters
+#' @param sim_pars list of simulation parameters
 #' @param covar_def expression defining covariates
-#' @param data_params list of parameters to create covariates and outcome
+#' @param outcome_pars list of parameters to create covariates and outcome
 #' @param models list of model specifications
 #' @param path where to save the results (file name will be generated
 #'             automatically)
@@ -10,7 +10,7 @@
 #'                 in `foreach::foreach`
 #' @export
 #'
-run_sim <- function(sim_params, covar_def, data_params, models,
+run_sim <- function(sim_pars, covar_def, outcome_pars, models,
                     path = NULL, packages = NULL) {
 
   if (!inherits(models, "list")) {
@@ -28,12 +28,13 @@ run_sim <- function(sim_params, covar_def, data_params, models,
 
 
   t0 <- Sys.time()
-  set.seed(sim_params$global_seed)
-  seeds <- sample(1:1e6, size = sim_params$nr_sims)
+  set.seed(sim_pars$global_seed)
+  seeds <- sample(1:1e6, size = sim_pars$nr_sims)
   sim_res <- foreach::`%dopar%`(foreach::foreach(seed = seeds,
                                                  .packages = packages), {
-    data <- sim_data(covar_def, data_params, seed = seed)
-    res <- fit_models(models, formula = data_params$formula, data, seed)
+    data <- sim_data(covar_def, outcome_pars, seed = seed)
+    res <- fit_models(models, formula = outcome_pars$formula,
+                      data = data, seed = seed)
 
     data_info <- get_data_info(data, seed)
     list(res = res, data_info = data_info)
@@ -46,13 +47,13 @@ run_sim <- function(sim_params, covar_def, data_params, models,
   }
 
 
-  file_name <- paste0("simres_", data_params$response_type, "_",
+  file_name <- paste0("simres_", outcome_pars$response_type, "_",
                       format(Sys.time(), "%Y-%m-%d_%H-%M"), ".RData")
   out <- structure(
     list(sim_res = sim_res,
-         sim_params = sim_params,
+         sim_pars = sim_pars,
          covar_def = covar_def,
-         data_params = data_params,
+         outcome_pars = outcome_pars,
          models = lapply(models, "[[", "call"),
          time = t1 - t0,
          file_name = file_name,
@@ -80,15 +81,15 @@ print.simulation_result <- function(x,
                                     ...) {
 
   cat("\n#------------------------------------------------------#\n")
-  cat("Simulation of", x$sim_params$nr_sims, "datasets with a",
-      x$data_params$response_type, "outcome.\n")
+  cat("Simulation of", x$sim_pars$nr_sims, "datasets with a",
+      x$outcome_pars$response_type, "outcome.\n")
   cat(" - Computational time:",
       round(x$time, digits), attr(x$time, "units"),
       if (!is.null(x$platform$workers)) {
         paste0("(", x$platform$workers, " workers)")
       },
       "\n")
-  cat(" - global seed:", x$sim_params$global_seed, "\n")
+  cat(" - global seed:", x$sim_pars$global_seed, "\n")
 
   cat("\nModels fitted:\n")
   models <- vapply(x$models, function(k) {
