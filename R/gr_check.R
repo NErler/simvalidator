@@ -39,12 +39,27 @@ run_jointai_flex <- function(fun, formula, data, seed = NULL, model_args,
 
 
 
-run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
+#' Check the Gelman-Rubin criterion for a 'JointAI' object and add samples if
+#' necessary
+#' @param fitted_model a object of class 'JointAI'
+#' @param extra_iter number of iterations that should be added to the model if
+#'   the Gelman-Rubin criterion is too large
+#' @param minsize the minimum number of iterations to be considered
+#' @param step the step size in which iterations are omitted as burn-in
+#' @param subset subset of parameters on which the Gelman-Rubin criterion should
+#'   be evaluated. Follows the logic used in **JointAI**
+#' @param cutoff the cut-off used for the Gelman Rubin criterion
+#' @param prop proportion of parameters that need to be below the `cutoff`
+#' @param gr_max maximum allowed value for the Gelman-Rubin criterion
+#' @param max_try maximum number of runs of `JointAI::add_samples()`
+#'
+#' @export
+run_gr_check <- function(fitted_model, extra_iter = NULL, minsize = 500L,
                          step = 200L, subset = NULL, cutoff = 1.2, prop = 0.8,
                          gr_max = 1.5, max_try = 5L) {
 
-  if (is.null(n.iter)) {
-    n.iter <- fitted_model$mcmc_settings$n.iter
+  if (is.null(extra_iter)) {
+    extra_iter <- fitted_model$mcmc_settings$n.iter
   }
 
   # check convergence
@@ -67,7 +82,7 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
       # if the chains have not yet converged, add more iterations
       counter <- 0
       while (counter < max_try & (is.na(gr_crit) & all(is.na(gr_crit_loo)))) {
-        fitted_model <- JointAI::add_samples(fitted_model, n.iter = n.iter)
+        fitted_model <- JointAI::add_samples(fitted_model, n.iter = extra_iter)
 
         # check the Gelman-Rubin criterion for all chains
         gr_crit <- check_gr_crit(fitted_model, minsize = minsize, step = step,
@@ -95,7 +110,8 @@ run_gr_check <- function(fitted_model, n.iter = NULL, minsize = 500L,
     }
   }
 
-  list(fitted_model = fitted_model, strt = strt,
+  list(fitted_model = fitted_model,
+       strt = strt,
        exclude_chains = exclude_chains)
 }
 
