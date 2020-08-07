@@ -21,7 +21,9 @@
 #' @param mean_cens mean censoring time
 #' @param basehaz_type character string specifying the type of baseline hazard:
 #'                     `weibull` or `spline`
-#' @param knot_range range of the knots for a spline baseline hazard
+#' @param knot_range range of the knots for a spline baseline hazard; if knots
+#'   are not available
+#' @param knots knots for baseline hazard spline
 #' @param .up upper limit for the integration over the hazard
 #' @param up_step step with which `.up` is increased in case of failure
 #' @param .tries integer; how often is the upper limit increased when looking
@@ -34,6 +36,7 @@
 #' @param progress_bar logical: should a progress bar be displayed
 #' @param ... arguments passed to other functions
 #'
+#'
 #' @export
 #'
 
@@ -43,7 +46,7 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
                                     basehaz_type = "splines",
                                     shape_wb = 1.2, mean_cens = 30.0,
                                     .tries = 5, .up = 500L, up_step = 500L,
-                                    knot_range = NULL,
+                                    knots = NULL, knot_range = NULL,
                                     seed = NULL, no_obs_after_event = TRUE,
                                     no_subset = FALSE, progress_bar = FALSE,
                                     ...) {
@@ -53,15 +56,13 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
   }
 
   # model formulas
-  fmla_long <- split_formula_list(check_formula_list(formula$long))
-  fmla_fixed <- lapply(fmla_long$fixed, function(x) {
-    as.formula(deparse(x[-2], width.cutoff = 500))
-  })
-  fmla_random <- remove_grouping(fmla_long$random)
 
+  fmla <- split_surv_long(formula)
+  fmla_fixed <- split_formula_list(fmla$long)$fixed
+  fmla_random <- split_formula_list(fmla$long)$random
 
   # groups
-  idvars <- extract_id(fmla_long$random)
+  idvars <- extract_id(fmla_random)
   groups <- get_groups(idvars, data)
   group_lvls <- colSums(!identify_level_relations(groups))
 
@@ -77,26 +78,35 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
 
   surv_data <- data[surv_row, ]
 
-  fmla_surv <- split_formula_tvar(formula$surv, data = data, groups = groups)
+  fmla_surv <- split_formula_tvar(fmla$surv[[1]], data = data, groups = groups)
+  surv_names <- all.vars(fmla$surv[[1L]][[2L]])
 
-  desgn_mat_surv_tconst <- model_matrix(fmla_surv$tconst, surv_data)
+
+  desgn_mat_surv_tconst <- model_matrix(fmla_surv$tconst,
+                                        centering(surv_data))
+
 
   if (basehaz_type == "spline") {
-    desgn_mat_surv_tconst <- desgn_mat_surv_tconst[, -1L]
-    kn <- get_knots_h0(nkn = length(beta_Bh0) - 4,
-                       Time = knot_range[1]:knot_range[2],
-                       gkx = gauss_kronrod()$gkx)
-    kn[length(kn)] <- 100 * kn[length(kn)]
+    if (is.null(knots)) {
+      desgn_mat_surv_tconst <- desgn_mat_surv_tconst[, -1L]
+      kn <- get_knots_h0(nkn = length(beta_Bh0) - 4,
+                         Time = knot_range[1]:knot_range[2],
+                         gkx = gauss_kronrod()$gkx)
+      kn[length(kn)] <- 100 * kn[length(kn)]
+    } else {
+      desgn_mat_surv_tconst <- desgn_mat_surv_tconst[, -1L]
+      kn <- knots
+    }
   }
 
   lp_surv_tconst <- desgn_mat_surv_tconst %*%
-    select_coefs(reg_coefs$surv, desgn_mat_surv_tconst)
+    select_coefs(reg_coefs[[names(fmla$surv)]], desgn_mat_surv_tconst)
 
 
 
   long_out <- sim_outcome_glmm(data = data,
-                               formula = formula$long,
-                               reg_coefs = reg_coefs$long,
+                               formula = fmla$long,
+                               reg_coefs = reg_coefs[names(fmla$long)],
                                resid_sd = resid_sd,
                                ranef_vcov = ranef_vcov,
                                type = type, return_ranefs = TRUE)
@@ -113,8 +123,8 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
 
       temp_data <- sim_linpred_glmm(data = temp_data,
                                     fmla_fixed = fmla_fixed,
-                                    fmla_random = fmla_random,
-                                    reg_coefs = reg_coefs$long,
+                                    fmla_random = lapply(fmla_random, remove_grouping),
+                                    reg_coefs = reg_coefs[names(fmla_fixed)],
                                     resid_sd = resid_sd,
                                     type = type,
                                     ranefs = lapply(ranefs, function(v) {
@@ -126,7 +136,7 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
 
       desgn_mat_surv_tvar <- model_matrix(fmla_surv$tvar, temp_data)
       lp_surv_tvar <- desgn_mat_surv_tvar %*%
-        select_coefs(reg_coefs$surv, desgn_mat_surv_tvar)
+        select_coefs(reg_coefs[[names(fmla$surv)]], desgn_mat_surv_tvar)
 
 
       if (basehaz_type == "weibull") {
@@ -136,7 +146,7 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
         desgn_mat_basehaz <- splines::splineDesign(kn, times, ord = 4L,
                                                    outer.ok = TRUE)
 
-        exp(c(desgn_mat_basehaz %*% beta_Bh0) +
+        exp(c(desgn_mat_basehaz %*% beta_Bh0[[names(fmla$surv)]]) +
               as.vector(lp_surv_tconst)[i] + as.vector(lp_surv_tvar))
       }
     }
@@ -182,27 +192,24 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
   # observed event times, i.e., min(true event times, censoring times)
   cens_times <- runif(length(true_times), 0L, 2L * mean_cens)
 
-  surv_data[, all.vars(formula$surv[[2L]])] <-
+  surv_data[, surv_names] <-
     cbind(pmin(true_times, cens_times), true_times <= cens_times)
 
-  surv_data[, all.vars(formula$surv[[2L]])[2]] <-
-    as.logical(surv_data[, all.vars(formula$surv[[2L]])[2]])
+  surv_data[, surv_names[2]] <- as.logical(surv_data[, surv_names[2]])
 
   # merge the survival outcome with the longitudinal data
   if (no_subset) {
-    jm_data <- merge(subset(surv_data,
-                            select = c(idvars, all.vars(formula$surv[[2L]]))),
+    jm_data <- merge(subset(surv_data, select = c(idvars, surv_names)),
                      data)
   } else {
     jm_data <- merge(subset(surv_data, !is.na(true_times),
-                            select = c(idvars, all.vars(formula$surv[[2L]]))),
+                            select = c(idvars, surv_names)),
                      data)
   }
 
 
   if (no_obs_after_event) {
-    jm_data <- jm_data[jm_data[[timevar]] <=
-                         jm_data[[all.vars(formula$surv[[2L]])[1]]],,
+    jm_data <- jm_data[jm_data[[timevar]] <= jm_data[[surv_names[1]]], ,
                        drop = FALSE]
   }
   attr(jm_data, "true_times") <- true_times
@@ -211,7 +218,7 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
   attr(jm_data, "no_obs_after_event") <- no_obs_after_event
   attr(jm_data, "timevar") <- timevar
   attr(jm_data, "size_orig") <- ivapply(groups, function(x) length(unique(x)))
-  # attr(jm_data, "lpconst") <- lp_surv_tconst
+  attr(jm_data, "lpconst") <- lp_surv_tconst
 
   jm_data
 }
