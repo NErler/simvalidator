@@ -61,11 +61,15 @@ sample_glm_resp <- function(type, linpred, resid_sd) {
 #' @param correlations numeric vector
 #' @export
 make_vcov <- function(variances, correlations) {
-  cor_mat <- diag(length(variances))
-  cor_mat[upper.tri(cor_mat)] <- correlations
-  cor_mat[lower.tri(cor_mat)] <- t(cor_mat)[lower.tri(cor_mat)]
+  if (inherits(correlations, "matrix")) {
+    cor_mat <- correlations
+  } else {
+    cor_mat <- diag(length(variances))
+    cor_mat[upper.tri(cor_mat)] <- correlations
+    cor_mat[lower.tri(cor_mat)] <- t(cor_mat)[lower.tri(cor_mat)]
+  }
 
-  sd_mat <- diag(sqrt(variances))
+  sd_mat <- diag(sqrt(variances), ncol = length(variances))
   sd_mat %*% cor_mat %*% sd_mat
 }
 
@@ -101,9 +105,6 @@ make_mv_vcov <- function(..., structure = "indep") {
 
 
 
-
-
-# used in data_list() and predict_coxph() (2020-06-11)
 gauss_kronrod <- function() {
   # return a list with Gauss-Kronrod quadrature points and weights
 
@@ -145,3 +146,12 @@ get_knots_h0 <- function(nkn, Time, gkx, obs_kn = TRUE) {
   sort(c(rep(range(Time, outer(Time/2, gkx + 1)), 4), kn))
 }
 
+
+centering <- function(data) {
+  for (k in names(data)) {
+    if (!inherits(data[[k]], "factor")) {
+      data[[k]] <- data[[k]] - mean(data[[k]], na.rm = TRUE)
+    }
+  }
+  data
+}
