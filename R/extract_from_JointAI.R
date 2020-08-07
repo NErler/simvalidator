@@ -27,7 +27,7 @@ extract_rd_vcov <- function(object) {
         }
 
         mat[lower.tri(mat)] <- t(mat)[lower.tri(mat)]
-        Matrix::nearPD(mat)$mat
+        as.matrix(Matrix::nearPD(mat)$mat)
       }
     })
 
