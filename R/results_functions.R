@@ -23,8 +23,8 @@ rbind_df_list <- function(df_list) {
 #' @param object object of class simulation_result
 #' @export
 get_res_df <- function(object) {
-  regcoef_df <- data.frame(variable = names(object$data_params$reg_coefs),
-                           regcoef = object$data_params$reg_coefs)
+  regcoef_df <- data.frame(variable = names(object$outcome_pars$reg_coefs),
+                           regcoef = object$outcome_pars$reg_coefs)
 
   res_df <- rbind_df_list(lapply(object$sim_res, "[[", "res"))
 
