@@ -26,19 +26,22 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
   oplan <- future::plan(future::sequential)
   future::plan(oplan)
 
-
   t0 <- Sys.time()
   set.seed(sim_pars$global_seed)
   seeds <- sample(1:1e6, size = sim_pars$nr_sims)
-  sim_res <- foreach::`%dopar%`(foreach::foreach(seed = seeds,
-                                                 .packages = packages), {
-    data <- sim_data(covar_def, outcome_pars, seed = seed)
-    res <- fit_models(models, formula = outcome_pars$formula,
-                      data = data, seed = seed)
+  sim_res <- foreach::`%dopar%`(
+    foreach::foreach(seed = seeds,
+                     .packages = packages),
+    {
+      data <- sim_data(covar_def, outcome_pars, seed = seed)
+      res <- fit_models(models, formula = outcome_pars$formula,
+                        data = data, seed = seed)
 
-    data_info <- get_data_info(data, seed)
-    list(res = res, data_info = data_info)
-  })
+      data_info <- get_data_info(data, seed)
+      list(res = res,
+           data_info = data_info
+      )
+    })
 
   t1 <- Sys.time()
 
