@@ -62,7 +62,7 @@ get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L,
                   ),
                   do.call(rbind,
                           lapply(names(coefs), function(out) {
-                            data.frame(outcome = JointAI::clean_survname(out),
+                            data.frame(outcome = unname(JointAI::clean_survname(out)),
                                        variable = names(coefs[[out]]),
                                        Mean = coefs[[out]]
                             )
@@ -70,7 +70,7 @@ get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L,
                   ),
                   do.call(rbind,
                           lapply(names(cis), function(out) {
-                            data.frame(outcome = JointAI::clean_survname(out),
+                            data.frame(outcome = unname(JointAI::clean_survname(out)),
                                        variable = rownames(cis[[out]]),
                                        cis[[out]],
                                        check.names = FALSE
