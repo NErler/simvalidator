@@ -27,7 +27,8 @@ library(kableExtra)
 theme_set(theme_gray())
 theme_update(panel.grid = element_blank(),
              panel.background = element_rect(fill = grey(0.98)),
-             panel.border = element_rect(fill = 'transparent', color = grey(0.85))
+             panel.border = element_rect(fill = 'transparent',
+                                         color = grey(0.85))
 )
 
 
@@ -41,7 +42,7 @@ res_df <- get_res_df(object)
 ggplot(subset(res_df, !is.na(bias)),
        aes(x = type, y = bias)) +
   geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
-  facet_wrap("variable", scales = 'free') +
+  facet_wrap("variable ~ outcome", scales = 'free') +
   geom_hline(yintercept = 0, linetype = 2, size = 1, color = 'darkgreen') +
   geom_jitter(height = 0, width = 0.2, alpha = 0.3) +
   xlab('') +
@@ -52,7 +53,7 @@ ggplot(subset(res_df, !is.na(bias)),
 ggplot(subset(res_df, !is.na(relbias)),
        aes(x = type, y = relbias)) +
   geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
-  facet_wrap("variable", scales = 'free') +
+  facet_wrap("variable ~ outcome", scales = 'free') +
   geom_hline(yintercept = 0, linetype = 2, size = 1, color = 'darkgreen') +
   geom_jitter(height = 0, width = 0.2, alpha = 0.3) +
   xlab('') +
@@ -63,8 +64,8 @@ ggplot(subset(res_df, !is.na(relbias)),
 ggplot(subset(res_df, !is.na(bias)),
        aes(x = type, y = Mean)) +
   geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
-  facet_wrap("variable", scales = 'free') +
-  geom_hline(aes(yintercept = regcoef),
+  facet_wrap("variable ~ outcome", scales = 'free') +
+  geom_hline(aes(yintercept = true_param),
              linetype = 2, size = 1, color = 'darkgreen') +
   geom_jitter(height = 0, width = 0.2, alpha = 0.3) +
   xlab('') +
@@ -93,7 +94,8 @@ subset(res_df, !is.na(covrg)) %>%
 
 #' ## MCMC criteria
 #' ### Gelman-Rubin criterion
-ggplot(subset(res_df, !is.na(`GR-crit`)), aes(x = type, y = `GR-crit`)) +
+ggplot(subset(res_df, !is.na(`GR-crit`)),
+       aes(x = type, y = `GR-crit`)) +
   geom_violin(draw_quantiles = 0.5) +
   geom_jitter(height = 0, alpha = 0.3, width = 0.3,
               aes(color = `GR-crit`)) +
@@ -102,7 +104,7 @@ ggplot(subset(res_df, !is.na(`GR-crit`)), aes(x = type, y = `GR-crit`)) +
   scale_color_gradient2(high = scales::muted("red"), mid = "yellow",
                         low = "darkgreen", midpoint = 1.2) +
   ylab('Gelman-Rubin criterion') +
-  facet_wrap("variable")
+  facet_wrap("variable ~ outcome")
 
 
 #' ### Monte-Carlo error
