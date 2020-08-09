@@ -27,7 +27,10 @@ extract_rd_vcov <- function(object) {
         }
 
         mat[lower.tri(mat)] <- t(mat)[lower.tri(mat)]
-        as.matrix(Matrix::nearPD(mat)$mat)
+        structure(
+          as.matrix(Matrix::nearPD(mat)$mat),
+          "mat_name" = unique(gsub("\\[[[:print:]]+", "", pos$name))
+        )
       }
     })
 
