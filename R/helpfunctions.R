@@ -71,6 +71,9 @@ set_args <- function(fun, args) {
   # args[setdiff(names(default_args), names(args))] <-
   #   default_args[setdiff(names(default_args), names(args))]
 
+  if (is.null(default_args$formula)) {
+    default_args <- c(default_args, setNames(list(NULL), "formula"))
+  }
   default_args[intersect(names(args), names(default_args))] <-
     args[intersect(names(args), names(default_args))]
 
