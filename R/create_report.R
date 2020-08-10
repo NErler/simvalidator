@@ -9,6 +9,12 @@ create_report <- function(object, title = NULL,
                           output_file = "simulation_report",
                           output_dir = tempdir(), ...) {
 
+  if (inherits(object, "character")) {
+    object_path <- object
+    object_name <- load(object_path)
+    object <- get(object_name)
+  }
+
   rmarkdown::render(system.file("templates", "report_template.R",
                                 package = "simvalidator"),
                     params = list(object = object),
