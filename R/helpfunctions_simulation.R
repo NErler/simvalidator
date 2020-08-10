@@ -97,7 +97,9 @@ sim_corr_unif <- function(dim, min = -0.5, max = 0.5) {
 #'
 make_mv_vcov <- function(..., structure = "indep") {
   if (structure == "indep") {
-    as.matrix(Matrix::bdiag(...))
+    structure(as.matrix(Matrix::bdiag(...)),
+              "mat_name" = cvapply(..., attr, "mat_name")
+    )
   } else {
     errormsg("not yet implemented")
   }
