@@ -127,7 +127,7 @@ extract_mean_cens <- function(object) {
 }
 
 
-#' Extract parameters necessary to simulate an outomce from an object of class
+#' Extract parameters necessary to simulate an outome from an object of class
 #' 'JointAI'
 #'
 #' This function obtains the `response_type` (from the `analysis_type`),
@@ -143,6 +143,7 @@ extract_outcome_pars <- function(object) {
 
   response_type <- switch(object$analysis_type,
                           "JM" = "joint_model",
+                          "lme" = "glmm",
                           errormsg("Model type unknown."))
 
   l <- list(
