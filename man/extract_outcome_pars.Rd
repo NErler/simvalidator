@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract_from_JointAI.R
 \name{extract_outcome_pars}
 \alias{extract_outcome_pars}
-\title{Extract parameters necessary to simulate an outomce from an object of class
+\title{Extract parameters necessary to simulate an outome from an object of class
 'JointAI'}
 \usage{
 extract_outcome_pars(object)

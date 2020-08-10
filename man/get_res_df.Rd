@@ -4,7 +4,7 @@
 \alias{get_res_df}
 \title{Convert the simulation results into a data.frame
 The resulting \code{data.frame} will contain the simulation results from all
-models, the true regression coefficients (\code{regcoef}) and simulation
+models, the true regression coefficients (\code{true_param}) and simulation
 evaluation measures (bias, relative bias, coverage of the CI, CI width and
 MSE) per simulated dataset.}
 \usage{
@@ -16,7 +16,7 @@ get_res_df(object)
 \description{
 Convert the simulation results into a data.frame
 The resulting \code{data.frame} will contain the simulation results from all
-models, the true regression coefficients (\code{regcoef}) and simulation
+models, the true regression coefficients (\code{true_param}) and simulation
 evaluation measures (bias, relative bias, coverage of the CI, CI width and
 MSE) per simulated dataset.
 }
