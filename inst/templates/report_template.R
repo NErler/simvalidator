@@ -124,4 +124,4 @@ ggplot(subset(res_df, !is.na(`MCE/SD`)), aes(x = type, y = `MCE/SD`)) +
   scale_color_gradient2(high = scales::muted("red"), mid = "yellow",
                         low = "darkgreen", midpoint = 0.06) +
   ylab('Monte-Carlo Error / Posterior SD') +
-  facet_wrap("outcome ~ variable")
+  facet_wrap("outcome ~ variable", scales = 'free_y')
