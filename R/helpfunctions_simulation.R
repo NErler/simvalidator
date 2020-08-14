@@ -97,7 +97,7 @@ sim_corr_unif <- function(dim, min = -0.5, max = 0.5) {
 #'
 make_mv_vcov <- function(..., structure = "indep") {
   if (structure == "indep") {
-    mat_name <- try(cvapply(list(...), attr, "mat_name"), silent = TRUE)
+    mat_name <- try(cvapply(as.list(...), attr, "mat_name"), silent = TRUE)
 
     structure(as.matrix(Matrix::bdiag(...)),
               "mat_name" = if (!inherits(mat_name, "try-error")) mat_name
