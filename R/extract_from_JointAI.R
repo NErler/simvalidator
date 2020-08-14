@@ -195,8 +195,10 @@ extract_covar_pars <- function(object, timevar = NULL) {
   })
 
   cor_mat <- lapply(data_list, function(df) {
-    cor(as.data.frame(lapply(df, as.numeric)),
-        use = 'pair', method = "spearman")
+    if (ncol(df) > 1) {
+      cor(as.data.frame(lapply(df, as.numeric)),
+          use = 'pair', method = "spearman")
+    }
   })
 
   means <- lapply(data_list, function(df) {
@@ -238,10 +240,25 @@ extract_covar_pars <- function(object, timevar = NULL) {
     tv <- split(data[, object$Mlist$timevar],
                 object$Mlist$groups[[subj_lvl]])
 
-    list(min = quantile(nvapply(tv, min), 0.1, names = FALSE),
-      max = quantile(nvapply(tv, max), 0.9, names = FALSE),
-      length = quantile(nvapply(tv, length), 0.75, names = FALSE),
-      name = object$Mlist$timevar)
+    list(name = object$Mlist$timevar,
+         distr = "unif",
+         length = quantile(nvapply(tv, length), 0.9, names = FALSE),
+         min = quantile(nvapply(tv, min), 0.1, names = FALSE),
+         max = quantile(nvapply(tv, max), 0.9, names = FALSE) * 1.5
+      )
+  } else if (!is.null(timevar)) {
+    tv <- object$data_list[[object$Mlist$Mlvls[[timevar]]]][, timevar]
+    multiply <- max(tv, na.rm = TRUE)
+    tv <- tv/max(tv, na.rm = TRUE)
+    tv[tv == 0] <- 1e-10
+    tv[tv == 1] <- 1 - 1e-10
+
+    list(name = timevar,
+         distr = "beta",
+         length = quantile(nvapply(tv, length), 0.9, names = FALSE),
+         multiply = multiply,
+         params = fitdistrplus::fitdist(tv, "beta", method = "mme")$estimate
+    )
   }
 
 
