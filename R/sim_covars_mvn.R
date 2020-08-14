@@ -48,19 +48,31 @@ sim_covars_mvn <- function(N, covar_pars, seed = NULL, ...) {
     }
 
     if (!is.null(covar_pars$timevar_pars$name)) {
+      fun <- get(paste0("r", covar_pars$timevar_pars$distr))
+
       if (covar_pars$timevar_pars$name %in% names(new_data)) {
         df_list <- lapply(
           split(new_data,
                 new_data[[names(group_lvls)[group_lvls == group_lvls[[lvl]] + 1]]]),
           function(df) {
-            df[[covar_pars$timevar_pars$name]] <-
-              c(0,
-                sort(
-                  runif(nrow(df) - 1,
-                        covar_pars$timevar_pars$min,
-                        covar_pars$timevar_pars$max)
+            if (covar_pars$timevar_pars$distr == "unif") {
+              df[[covar_pars$timevar_pars$name]] <-
+                c(0,
+                  sort(
+                    do.call(fun, as.list(c(n = nrow(df) - 1,
+                                           covar_pars$timevar_pars$params))
+                    )
+                  )
                 )
-              )
+            } else {
+              df[[covar_pars$timevar_pars$name]] <-
+                sort(
+                  do.call(fun,
+                          as.list(c(n = nrow(df),
+                                    covar_pars$timevar_pars$params))
+                  ) * covar_pars$timevar_pars$multiply
+                )
+            }
             df
           })
         new_data <- do.call(rbind, df_list)
