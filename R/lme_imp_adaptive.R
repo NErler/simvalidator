@@ -1,8 +1,6 @@
 #' Run a joint model with adaptively increasing the number of iterations
 #' @inheritParams JointAI::lme_imp
 #' @inheritParams run_gr_check
-#' @param inits_iter number of iteration used for the model that generates the
-#' initial values
 #' @export
 lme_imp_adaptive <- function(fixed, data, random,
                              n.chains = 3, n.adapt = 100, n.iter = 0, thin = 1,

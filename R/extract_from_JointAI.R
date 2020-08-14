@@ -174,6 +174,7 @@ extract_outcome_pars <- function(object) {
 #' Extract parameters necessary to simulate covariate data from an object of
 #' class 'JointAI'
 #' @param object object of class 'JointAI'
+#' @param timevar name of the time variable, is there is one
 #' @export
 extract_covar_pars <- function(object, timevar = NULL) {
 
@@ -276,6 +277,7 @@ extract_covar_pars <- function(object, timevar = NULL) {
 #' @param object an object of class "JointAI"
 #' @param file path and file name where the extracted information should be
 #'   saved to.
+#' @param timevar name of the time variable, is there is one
 #'
 #' @export
 create_simulation_scenario <- function(object, file, timevar = NULL) {
