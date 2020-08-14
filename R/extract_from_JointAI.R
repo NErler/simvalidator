@@ -175,7 +175,7 @@ extract_outcome_pars <- function(object) {
 #' class 'JointAI'
 #' @param object object of class 'JointAI'
 #' @export
-extract_covar_pars <- function(object) {
+extract_covar_pars <- function(object, timevar = NULL) {
 
   idvars <- names(object$Mlist$groups)
   data <- object$data
@@ -261,7 +261,7 @@ extract_covar_pars <- function(object) {
 #'   saved to.
 #'
 #' @export
-create_simulation_scenario <- function(object, file) {
+create_simulation_scenario <- function(object, file, timevar = NULL) {
 
   if (inherits(object, "character")) {
     object_path <- object
@@ -279,7 +279,7 @@ create_simulation_scenario <- function(object, file) {
   }
 
   outcome_pars <- extract_outcome_pars(object)
-  covar_pars <- extract_covar_pars(object)
+  covar_pars <- extract_covar_pars(object, timevar = timevar)
 
   save(outcome_pars, covar_pars, file = file)
 }
