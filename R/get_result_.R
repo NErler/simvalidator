@@ -31,12 +31,14 @@ get_result_default <- function(fitted_model, type = NA, seed = NA, ...) {
 #' @param type optional character string specifying the type (to identify
 #'             what type of model the results belong to later in the visualization
 #'             and description of results)
+#' @param ci_method method passed to `confint()`
 #' @param seed optional (but) suggested seed value. Will be used when called
 #'             from within `run_models()`.
 #' @param ... optional additional arguments for compatibility with other
 #'            `get_result_<...>` functions
 #' @export
-get_result_lme4 <- function(fitted_model, type = NA, seed = NA, ...) {
+get_result_lme4 <- function(fitted_model, type = NA, seed = NA,
+                            ci_method = "Wald", ...) {
 
   outcome <- as.character(formula(fitted_model)[[2]])
 
@@ -49,8 +51,8 @@ get_result_lme4 <- function(fitted_model, type = NA, seed = NA, ...) {
              ".sigma"
            })
 
-  rd_vcov <- lapply(names(VarCorr(fitted_model)), function(lvl) {
-    rd_vcov <- VarCorr(fitted_model)[[lvl]]
+  rd_vcov <- lapply(names(lme4::VarCorr(fitted_model)), function(lvl) {
+    rd_vcov <- lme4::VarCorr(fitted_model)[[lvl]]
 
     nam <- lapply(1:nrow(rd_vcov), function(i) {
       paste0("D_", outcome, "_", lvl, "[", i, ",", i:ncol(rd_vcov), "]")
@@ -66,8 +68,13 @@ get_result_lme4 <- function(fitted_model, type = NA, seed = NA, ...) {
   )
 
 
-  cis <- lme4::confint.merMod(fitted_model,
-                       parm = parm)[parm, ]
+  cis <- try(lme4::confint.merMod(fitted_model,
+                                  parm = parm,
+                                  method = ci_method)[parm, ], silent = TRUE)
+  if (inherits(cis, "try-error")) {
+    cis <- matrix(data = NA, nrow = length(parm), ncol = 2,
+                  dimnames = list(NULL, c("2.5%", "97.5%")))
+  }
 
 
 
