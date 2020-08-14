@@ -80,7 +80,7 @@ get_vcov_df <- function(ranef_vcov, res_df) {
             nam <- get_vcov_names(vcov)
             data.frame(outcome = res_df$outcome[match(nam, res_df$variable)],
                        variable = nam,
-                       true_param = vcov[upper.tri(vcov, diag = TRUE)]
+                       true_param = vcov[lower.tri(vcov, diag = TRUE)]
             )
           })
   )
