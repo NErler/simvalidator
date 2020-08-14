@@ -58,7 +58,7 @@ get_result_lme4 <- function(fitted_model, type = NA, seed = NA,
       paste0("D_", outcome, "_", lvl, "[", i, ",", i:ncol(rd_vcov), "]")
     })
 
-    rd_vcov <- rd_vcov[upper.tri(rd_vcov, diag = TRUE)]
+    rd_vcov <- rd_vcov[lower.tri(rd_vcov, diag = TRUE)]
     names(rd_vcov) <- unlist(nam)
     rd_vcov
   })
