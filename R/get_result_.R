@@ -22,6 +22,73 @@ get_result_default <- function(fitted_model, type = NA, seed = NA, ...) {
 }
 
 
+
+
+
+#' Extract a summary of the model results from a lme4 model
+#' This function uses `fixef()` and `confint()`.
+#' @param fitted_model a fitted model object
+#' @param type optional character string specifying the type (to identify
+#'             what type of model the results belong to later in the visualization
+#'             and description of results)
+#' @param seed optional (but) suggested seed value. Will be used when called
+#'             from within `run_models()`.
+#' @param ... optional additional arguments for compatibility with other
+#'            `get_result_<...>` functions
+#' @export
+get_result_lme4 <- function(fitted_model, type = NA, seed = NA, ...) {
+
+  outcome <- as.character(formula(fitted_model)[[2]])
+
+  sigma <- if (family(fitted_model)$family %in% c("gaussian", "Gamma")) {
+    sigma(fitted_model)
+  }
+
+  parm <- c(names(lme4::fixef(fitted_model)),
+           if (!is.null(sigma)) {
+             ".sigma"
+           })
+
+  rd_vcov <- lapply(names(VarCorr(fitted_model)), function(lvl) {
+    rd_vcov <- VarCorr(fitted_model)[[lvl]]
+
+    nam <- lapply(1:nrow(rd_vcov), function(i) {
+      paste0("D_", outcome, "_", lvl, "[", i, ",", i:ncol(rd_vcov), "]")
+    })
+
+    rd_vcov <- rd_vcov[upper.tri(rd_vcov, diag = TRUE)]
+    names(rd_vcov) <- unlist(nam)
+    rd_vcov
+  })
+
+  nam <- gsub("^.sigma$", paste0("sigma_", outcome),
+              c(parm, unlist(lapply(rd_vcov, names)))
+  )
+
+
+  cis <- lme4::confint.merMod(fitted_model,
+                       parm = parm)[parm, ]
+
+
+
+  res <- data.frame(
+    seed = seed,
+    type = type,
+    variable = nam,
+    Mean = c(lme4::fixef(fitted_model),
+             if (!is.null(sigma))
+               sigma,
+             unlist(rd_vcov)),
+    cis[match(gsub(paste0("sigma_", outcome), ".sigma", nam),
+              rownames(cis)),],
+    check.names = FALSE
+  )
+  colnames(res) <- gsub(" %", "%", colnames(res))
+  res
+}
+
+
+
 #' Extract a summary of the model results from a JointAI model
 #' This function uses `coef()` and `confint()`.
 #' @param fitted_model a fitted model object
