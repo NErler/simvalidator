@@ -88,14 +88,25 @@ ggplot(subset(res_df, !is.na(bias)),
   ylab('width of 95% CI')
 
 
-#' ## Coverage & MSE
-#' ### Coverage and MSE
+#' ## Coverage & MSE {.tabset}
+#' ### Coverage
 subset(res_df, !is.na(covrg)) %>%
   plyr::ddply(c('type', "outcome", 'variable'), plyr::summarize,
-        covrg = mean(covrg),
-        MSE = mean(bias^2)) %>%
+        covrg = mean(covrg)
+        ) %>%
+  reshape2::dcast(outcome + variable ~ type, value.var = "covrg") %>%
   kable(digits = 3) %>%
-  kable_styling(full_width = FALSE)
+  kable_styling(full_width = FALSE) %>%
+    add_header_above(c(" " = 2, "coverage" = 2))
+
+#' ### MSE
+plyr::ddply(res_df, c('type', "outcome", 'variable'), plyr::summarize,
+            MSE = mean(bias^2)
+) %>%
+  reshape2::dcast(outcome + variable ~ type, value.var = "MSE") %>%
+  kable(digits = 3) %>%
+  kable_styling(full_width = FALSE) %>%
+  add_header_above(c(" " = 2, "MSE" = 2))
 
 
 #' ## MCMC criteria
