@@ -82,6 +82,7 @@ get_result_lme4 <- function(fitted_model, type = NA, seed = NA,
     seed = seed,
     type = type,
     variable = nam,
+    outcome = outcome,
     Mean = c(lme4::fixef(fitted_model),
              if (!is.null(sigma))
                sigma,
