@@ -4,13 +4,15 @@
 \alias{create_simulation_scenario}
 \title{Create a simulation scenario from a JointAI object}
 \usage{
-create_simulation_scenario(object, file)
+create_simulation_scenario(object, file, timevar = NULL)
 }
 \arguments{
 \item{object}{an object of class "JointAI"}
 
 \item{file}{path and file name where the extracted information should be
 saved to.}
+
+\item{timevar}{name of the time variable, is there is one}
 }
 \description{
 Extracts parameters needed to simulate covariates (\code{extract_covar_pars()})

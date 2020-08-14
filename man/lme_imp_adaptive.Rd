@@ -199,9 +199,6 @@ be evaluated. Follows the logic used in \strong{JointAI}}
 \item{max_try}{maximum number of runs of \code{JointAI::add_samples()}}
 
 \item{...}{additional, optional arguments (not used)}
-
-\item{inits_iter}{number of iteration used for the model that generates the
-initial values}
 }
 \description{
 Run a joint model with adaptively increasing the number of iterations

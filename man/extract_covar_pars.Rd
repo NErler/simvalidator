@@ -5,10 +5,12 @@
 \title{Extract parameters necessary to simulate covariate data from an object of
 class 'JointAI'}
 \usage{
-extract_covar_pars(object)
+extract_covar_pars(object, timevar = NULL)
 }
 \arguments{
 \item{object}{object of class 'JointAI'}
+
+\item{timevar}{name of the time variable, is there is one}
 }
 \description{
 Extract parameters necessary to simulate covariate data from an object of
