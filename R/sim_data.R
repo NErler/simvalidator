@@ -16,7 +16,7 @@ sim_data <- function(covar_def, outcome_pars, seed = NULL) {
   input_data <- do.call(covar_def, c(outcome_pars, seed = seed))
 
   do.call(get(out_fun_name),
-          c(list(data = input_data, seed = seed),
+          c(list(data = input_data), seed = NULL,
             outcome_pars, outcome_pars$other_pars)
   )
 }
