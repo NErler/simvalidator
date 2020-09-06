@@ -13,4 +13,4 @@ NULL
 
 
 
-utils::globalVariables(c("seed", "value"))
+utils::globalVariables(c("seed", "value", "mis_scen"))

@@ -9,6 +9,7 @@ run_sim(
   covar_def,
   outcome_pars,
   models,
+  mis_scenarios = NULL,
   path = NULL,
   packages = NULL
 )
@@ -21,6 +22,8 @@ run_sim(
 \item{outcome_pars}{list of parameters to create covariates and outcome}
 
 \item{models}{list of model specifications}
+
+\item{mis_scenarios}{list of missingness scenarios}
 
 \item{path}{where to save the results (file name will be generated
 automatically)}

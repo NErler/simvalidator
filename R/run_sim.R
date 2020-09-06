@@ -4,6 +4,7 @@
 #' @param covar_def expression defining covariates
 #' @param outcome_pars list of parameters to create covariates and outcome
 #' @param models list of model specifications
+#' @param mis_scenarios list of missingness scenarios
 #' @param path where to save the results (file name will be generated
 #'             automatically)
 #' @param packages optional character vector of packages passed to `.packages`
@@ -11,6 +12,7 @@
 #' @export
 #'
 run_sim <- function(sim_pars, covar_def, outcome_pars, models,
+                    mis_scenarios = NULL,
                     path = NULL, packages = NULL) {
 
   if (!inherits(models, "list")) {
@@ -23,6 +25,10 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
     }
   }
 
+  if (is.null(mis_scenarios)) {
+    mis_scenarios <- list(complete = NULL)
+  }
+
   oplan <- future::plan(future::sequential)
   future::plan(oplan)
 
@@ -33,14 +39,32 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
     foreach::foreach(seed = seeds,
                      .packages = packages),
     {
-      data <- sim_data(covar_def, outcome_pars, seed = seed)
-      res <- fit_models(models, formula = outcome_pars$formula,
-                        data = data, seed = seed)
+      # simulate complete data
+      data_orig <- sim_data(covar_def, outcome_pars, seed = seed)
 
-      data_info <- get_data_info(data, seed)
-      list(res = res,
-           data_info = data_info
-      )
+      # determine groupin structure and levels of each variable
+      groups <- get_groups(setdiff(names(outcome_pars$covar_pars$group_lvls),
+                                   "lvlone"),
+                           data_orig)
+      data_lvls <- cvapply(data_orig, check_varlevel, groups = groups)
+
+      foreach::`%dopar%`(
+                 foreach::foreach(mis_scen = mis_scenarios,
+                                  .packages = packages),
+                 {
+                   data <- create_missingness(data_orig, mis_scen)
+                   res <- fit_models(models, formula = outcome_pars$formula,
+                                     data = data, seed = seed)
+                   data_info <- get_data_info(
+                     data,
+                     seed,
+                     idvars = names(outcome_pars$covar_pars$group_lvls),
+                     data_lvls = data_lvls
+                   )
+                   list(res = res,
+                        data_info = data_info)
+                 }
+               )
     })
 
   t1 <- Sys.time()
