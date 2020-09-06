@@ -19,6 +19,7 @@ SystemRequirements: JAGS (http://mcmc-jags.sourceforge.net)
 Imports:
     JointAI,
     coda,
+    fitdistrplus,
     future,
     foreach,
     MASS,
@@ -27,4 +28,4 @@ Imports:
     reshape2,
     rmarkdown,
     Rcpp
-Suggests: benchmarkme, plyr, kableExtra
+Suggests: benchmarkme, plyr, kableExtra, lme4
