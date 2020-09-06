@@ -4,12 +4,17 @@
 \alias{get_data_info}
 \title{Summarize information of the simulated data}
 \usage{
-get_data_info(data, seed, ...)
+get_data_info(data, seed, idvars, data_lvls, ...)
 }
 \arguments{
 \item{data}{a \code{data.frame}}
 
 \item{seed}{the seed value}
+
+\item{idvars}{optional vector with names of ID variables that should be used
+to identify levels in a multi-level setting}
+
+\item{data_lvls}{named vector giving the level of each variable}
 
 \item{...}{optional additional arguments}
 }
