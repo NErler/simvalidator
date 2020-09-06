@@ -37,6 +37,30 @@ object <- params$object
 res_df <- get_res_df(object)
 
 
+#' # Data
+#' ## Outcome
+#'
+#' ## Covariates
+# reshape2::melt(
+#   lapply(object$sim_res, function(x) {
+#     nr_tries = x$data_info$nr_tries
+#   })
+# ) %>%
+#   ggplot(aes(x = factor(L1),
+#              fill = factor(value, labels = rev(unique(value))))) +
+#   geom_bar() +
+#   xlab("Simulation Nr.") +
+#   scale_fill_viridis_d(name = "nr_tries") +
+#   theme(axis.text.x = element_blank(),
+#         axis.ticks.x = element_blank(),
+#         legend.position = "top")
+#
+#'
+#' ## Missing Data
+#'
+#'
+
+#' # Results
 #' ## Bias and CI width {.tabset}
 n_rows <- ceiling(nrow(unique(subset(res_df, !is.na(bias),
                                      select = c("variable", "outcome"))))/4)
@@ -97,7 +121,7 @@ subset(res_df, !is.na(covrg)) %>%
   reshape2::dcast(outcome + variable ~ type, value.var = "covrg") %>%
   kable(digits = 3) %>%
   kable_styling(full_width = FALSE) %>%
-    add_header_above(c(" " = 2, "coverage" = 2))
+    add_header_above(c(" " = 2, "coverage" = length(unique(res_df$type))))
 
 #' ### MSE
 plyr::ddply(res_df, c('type', "outcome", 'variable'), plyr::summarize,
@@ -106,7 +130,7 @@ plyr::ddply(res_df, c('type', "outcome", 'variable'), plyr::summarize,
   reshape2::dcast(outcome + variable ~ type, value.var = "MSE") %>%
   kable(digits = 3) %>%
   kable_styling(full_width = FALSE) %>%
-  add_header_above(c(" " = 2, "MSE" = 2))
+  add_header_above(c(" " = 2, "MSE" = length(unique(res_df$type))))
 
 
 #' ## MCMC criteria
@@ -121,6 +145,7 @@ ggplot(subset(res_df, !is.na(`GR-crit`)),
   geom_hline(yintercept = 1.1, color = grey(0.5), lty = 3) +
   scale_color_gradient2(high = scales::muted("red"), mid = "yellow",
                         low = "darkgreen", midpoint = 1.2) +
+  scale_y_continuous(trans = "log") +
   ylab('Gelman-Rubin criterion') +
   facet_wrap("outcome ~ variable")
 
