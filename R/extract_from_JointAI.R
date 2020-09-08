@@ -244,9 +244,10 @@ extract_covar_pars <- function(object, timevar = NULL) {
     list(name = object$Mlist$timevar,
          distr = "unif",
          length = quantile(nvapply(tv, length), 0.9, names = FALSE),
-         min = quantile(nvapply(tv, min), 0.1, names = FALSE),
-         max = quantile(nvapply(tv, max), 0.9, names = FALSE) * 1.5
-      )
+         params = list(min = quantile(nvapply(tv, min), 0.1, names = FALSE),
+                       max = quantile(nvapply(tv, max), 0.9, names = FALSE) * 1.5
+         )
+    )
   } else if (!is.null(timevar)) {
     tv <- object$data_list[[object$Mlist$Mlvls[[timevar]]]][, timevar]
     multiply <- max(tv, na.rm = TRUE)
