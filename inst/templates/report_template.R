@@ -39,22 +39,78 @@ res_df <- get_res_df(object)
 
 #' # Data
 #' ## Outcome
+reshape2::melt(
+  lapply(object$sim_res, function(x) {
+    data.frame(t(x[[1]]$data_info$size))
+  }), id.vars = NULL) %>%
+  ggplot(aes(x = 1, y = value)) +
+  geom_violin() +
+  geom_jitter(width = 0.2, height = 0) +
+  facet_wrap("variable", scales = 'free_y') +
+  xlab("Simulation Nr.") +
+  # scale_fill_viridis_d(name = "sample size") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "top")
+  # geom_hline(data = reshape2::melt(data.frame(t(object$outcome_pars$N)),
+  #                                  id.vars = NULL),
+  #            aes(yintercept = value), size = 1, color = "blue")
+
+
+reshape2::melt(
+  lapply(object$sim_res, function(x) {
+    nr_tries = x[[1]]$data_info$nr_tries
+  })
+) %>%
+  ggplot(aes(x = factor(L1),
+             fill = factor(value, labels = rev(sort(unique(value)))))) +
+  geom_bar() +
+  xlab("Simulation Nr.") +
+  scale_fill_viridis_d(name = "nr_tries") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "top")
+
+
+
+
+#' ## Covariates {.tabset}
 #'
-#' ## Covariates
-# reshape2::melt(
-#   lapply(object$sim_res, function(x) {
-#     nr_tries = x$data_info$nr_tries
-#   })
-# ) %>%
-#   ggplot(aes(x = factor(L1),
-#              fill = factor(value, labels = rev(unique(value))))) +
-#   geom_bar() +
-#   xlab("Simulation Nr.") +
-#   scale_fill_viridis_d(name = "nr_tries") +
-#   theme(axis.text.x = element_blank(),
-#         axis.ticks.x = element_blank(),
-#         legend.position = "top")
-#
+#+ covarplots, results = "asis"
+data_summary <- lapply(object$sim_res, function(x) {
+  x[[1]]$data_info$summary
+})
+
+for (k in names(data_summary[[1]])) {
+  if (!is.null(data_summary[[1]][[k]])) {
+    cat("\n\n###", k, "\n\n")
+
+    if (inherits(data_summary[[1]][[k]], "list")) {
+      p <- lapply(data_summary, function(x) {
+        as.data.frame(x[[k]])
+      }) %>%
+        reshape2::melt(id.vars = colnames(.[[1]])) %>%
+        ggplot(aes(x = x, y = y, group = L1)) +
+        geom_line(alpha = 0.1) +
+        xlab(k) +
+        ylab("density")
+    } else if (inherits(data_summary[[1]][[k]], "table")) {
+      p <- lapply(data_summary, function(x) {
+        as.data.frame(x[[k]])
+      }) %>%
+        reshape2::melt(id.vars = colnames(.[[1]])) %>%
+        ggplot(aes(x = factor(L1), y = Freq, fill = category)) +
+        geom_bar(stat = "identity") +
+        scale_fill_viridis_d(name = k) +
+        xlab("simulation") +
+        theme(axis.text.x = element_blank(),
+              axis.ticks.x = element_blank(),
+              legend.position = "top")
+    }
+    print(p)
+  }
+}
+
 #'
 #' ## Missing Data
 #'
