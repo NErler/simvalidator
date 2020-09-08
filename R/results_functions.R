@@ -23,7 +23,9 @@ rbind_df_list <- function(df_list) {
 #' @param object object of class simulation_result
 #' @export
 get_res_df <- function(object) {
-  res_df <- rbind_df_list(lapply(object$sim_res, "[[", "res"))
+  res_df <- rbind_df_list(lapply(object$sim_res, function(x) {
+    x[[1]]$res
+  }))
 
 
   true_param_df <- if (is.list(object$outcome_pars$reg_coefs)) {
