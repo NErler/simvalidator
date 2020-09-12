@@ -102,3 +102,8 @@ set_model <- function(fun, fun_args = NULL, result = "default",
             class = "model_specification")
 }
 
+
+make_cc_subset <- function(data, formula) {
+  vars <- JointAI::all_vars(formula)
+  droplevels(subset(data, subset = complete.cases(data[, vars])))
+}
