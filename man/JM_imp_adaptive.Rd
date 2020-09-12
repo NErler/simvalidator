@@ -44,6 +44,7 @@ JM_imp_adaptive(
   prop = 0.8,
   gr_max = 1.5,
   max_try = 5L,
+  cc = FALSE,
   ...
 )
 }
@@ -212,6 +213,8 @@ be evaluated. Follows the logic used in \strong{JointAI}}
 \item{gr_max}{maximum allowed value for the Gelman-Rubin criterion}
 
 \item{max_try}{maximum number of runs of \code{JointAI::add_samples()}}
+
+\item{cc}{logical: should the model be run as a complete case analysis?}
 
 \item{...}{additional, optional arguments (not used)}
 }

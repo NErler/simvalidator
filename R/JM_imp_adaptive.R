@@ -4,6 +4,7 @@
 #' @inheritParams run_gr_check
 #' @param inits_iter number of iteration used for the model that generates the
 #' initial values
+#' @param cc logical: should the model be run as a complete case analysis?
 #' @export
 JM_imp_adaptive <- function(formula, data, df_basehaz = 6,
                             n.chains = 3, n.adapt = 100, n.iter = 0, thin = 1,
@@ -23,10 +24,15 @@ JM_imp_adaptive <- function(formula, data, df_basehaz = 6,
                             extra_iter = NULL,
                             minsize = 500L, step = 200L, subset = NULL,
                             cutoff = 1.2, prop = 0.8,
-                            gr_max = 1.5, max_try = 5L,
+                            gr_max = 1.5, max_try = 5L, cc = FALSE,
                             ...) {
 
   args <- as.list(match.call()[-1L])
+
+  if (cc) {
+    args$data <- make_cc_subset(args$data, args$formula)
+    data <- make_cc_subset(data, args$formula)
+  }
 
   inits <- get_inits_JM(formula = formula, data = data,
                         inits_iter = inits_iter, n_chains = n.chains)
