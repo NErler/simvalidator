@@ -7,11 +7,13 @@
 #'             and description of results)
 #' @param seed optional (but) suggested seed value. Will be used when called
 #'             from within `run_models()`.
+#' @param scen optional name of scenario
 #' @param ... optional additional arguments for compatibility with other
 #'            `get_result_<...>` functions
 #' @export
-get_result_default <- function(fitted_model, type = NA, seed = NA, ...) {
+get_result_default <- function(fitted_model, type = NA, seed = NA, scen = NA,
   res <- data.frame(seed = seed,
+                    scen = scen,
                     type = type,
                     variable = names(coef(fitted_model)),
                     Mean = coef(fitted_model),
@@ -36,8 +38,9 @@ get_result_default <- function(fitted_model, type = NA, seed = NA, ...) {
 #'             from within `run_models()`.
 #' @param ... optional additional arguments for compatibility with other
 #'            `get_result_<...>` functions
+#' @param scen optional name of scenario
 #' @export
-get_result_lme4 <- function(fitted_model, type = NA, seed = NA,
+get_result_lme4 <- function(fitted_model, type = NA, seed = NA, scen = NA,
                             ci_method = "Wald", ...) {
 
   outcome <- as.character(formula(fitted_model)[[2]])
@@ -80,6 +83,7 @@ get_result_lme4 <- function(fitted_model, type = NA, seed = NA,
 
   res <- data.frame(
     seed = seed,
+    scen = scen,
     type = type,
     variable = nam,
     outcome = outcome,
@@ -109,9 +113,10 @@ get_result_lme4 <- function(fitted_model, type = NA, seed = NA,
 #' @param subset subset specification of `JointAI::coef()`,
 #'               `JointAI::confint()`, `JointAI::GR_crit` and
 #'               `JointAI::MC_error()`
+#' @param scen optional name of scenario
 #' @export
 get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L,
-                               subset = NULL, ...) {
+                               subset = NULL, scen = NA, type = NULL, ...) {
 
   gr_crit <- JointAI::GR_crit(fitted_model, subset = subset,
                               autoburnin = FALSE,
@@ -129,6 +134,7 @@ get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L,
                 list(
                   data.frame(
                     seed = seed,
+                    scen = scen,
                     time = sum(as.numeric(fitted_model$comp_info$duration,
                                           units = "hours")),
                     type = 'JointAI',
