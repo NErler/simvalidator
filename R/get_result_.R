@@ -12,12 +12,21 @@
 #'            `get_result_<...>` functions
 #' @export
 get_result_default <- function(fitted_model, type = NA, seed = NA, scen = NA,
+                               ...) {
+  outcome <- as.character(formula(fitted_model)[[2]])
+
+  sigma <- if (family(fitted_model)$family %in% c("gaussian", "Gamma")) {
+    setNames(sigma(fitted_model), paste0("sigma_", outcome))
+  }
+
   res <- data.frame(seed = seed,
                     scen = scen,
+                    outcome = outcome,
                     type = type,
-                    variable = names(coef(fitted_model)),
-                    Mean = coef(fitted_model),
-                    confint(fitted_model),
+                    variable = names(c(coef(fitted_model), sigma)),
+                    Mean = c(coef(fitted_model), sigma),
+                    rbind(confint(fitted_model),
+                          if (!is.null(sigma)) c(NA, NA)),
                     check.names = FALSE)
   colnames(res) <- gsub(" %", "%", colnames(res))
   res
