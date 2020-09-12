@@ -9,11 +9,19 @@
 #'             automatically)
 #' @param packages optional character vector of packages passed to `.packages`
 #'                 in `foreach::foreach`
+#' @param batch_size optional; number of simulations per batch (will be saved
+#'                   in separate file)
+#' @param sim_name optional character string used in naming the output folder
+#' @param batch_numbers optional index numbers of the batches of simulations to be run
+#'                        (in order to only run a subset)
+#' @param skip_fit logical; should the step in which the models are fitted be
+#'                 skipped (to only get the simulated data)?
 #' @export
 #'
 run_sim <- function(sim_pars, covar_def, outcome_pars, models,
-                    mis_scenarios = NULL,
-                    path = NULL, packages = NULL) {
+                    mis_scenarios = NULL, sim_name = NULL,
+                    batch_size = NULL, batch_numbers = NULL,
+                    path = NULL, packages = NULL, skip_fit = FALSE) {
 
   if (!inherits(models, "list")) {
     if (inherits(models, "model_specification")) {
@@ -29,12 +37,59 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
     mis_scenarios <- list(complete = NULL)
   }
 
+  set.seed(sim_pars$global_seed)
+  seeds <- sample(1:1e6, size = sim_pars$nr_sims)
+
+  if (is.null(batch_size)) {
+    batch_size <- sim_pars$nr_sims
+  }
+
+  batches <- split(seeds, ceiling(seq_along(seeds)/batch_size))
+
+  folder <- paste0("sim_", outcome_pars$response_type,
+                             if (!is.null(sim_name)) paste0("_", sim_name),
+                             "_", sim_pars$global_seed)
+
+  if (!dir.exists(folder)) {
+    dir.create(folder)
+  }
+
+  if (is.null(batch_numbers) ) {
+    batch_numbers <- seq_along(batches)
+  }
+
+  for (b in batch_numbers) {
+    batch_nr <- paste0("batch-",
+                       sprintf(paste0("%0", nchar(length(batches)) ,"d"), b),
+                       "of",
+                       sprintf(paste0("%0", nchar(length(batches)) ,"d"),
+                               length(batches)))
+
+    file_name <- paste0(c(folder, batch_nr), collapse = "_")
+
+    run_sim_batch(seeds = batches[[b]],
+                  sim_pars = sim_pars,
+                  covar_def = covar_def,
+                  outcome_pars = outcome_pars,
+                  models = models,
+                  mis_scenarios = mis_scenarios,
+                  skip_fit = skip_fit, packages = packages,
+                  file_name = file_name, folder = folder,
+                  path = path)
+  }
+}
+
+
+run_sim_batch <- function(seeds,
+                          sim_pars, covar_def, outcome_pars, models,
+                          mis_scenarios = NULL, skip_fit = FALSE,
+                          packages, file_name, folder, path) {
+
   oplan <- future::plan(future::sequential)
   future::plan(oplan)
 
   t0 <- Sys.time()
-  set.seed(sim_pars$global_seed)
-  seeds <- sample(1:1e6, size = sim_pars$nr_sims)
+
   sim_res <- foreach::`%dopar%`(
     foreach::foreach(seed = seeds,
                      .packages = packages),
@@ -42,29 +97,44 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
       # simulate complete data
       data_orig <- sim_data(covar_def, outcome_pars, seed = seed)
 
-      # determine groupin structure and levels of each variable
+      # determine grouping structure and levels of each variable
       groups <- get_groups(setdiff(names(outcome_pars$covar_pars$group_lvls),
                                    "lvlone"),
                            data_orig)
       data_lvls <- cvapply(data_orig, check_varlevel, groups = groups)
 
-      foreach::`%dopar%`(
-                 foreach::foreach(mis_scen = mis_scenarios,
-                                  .packages = packages),
-                 {
-                   data <- create_missingness(data_orig, mis_scen)
-                   res <- fit_models(models, formula = outcome_pars$formula,
-                                     data = data, seed = seed)
-                   data_info <- get_data_info(
-                     data,
-                     seed,
-                     idvars = names(outcome_pars$covar_pars$group_lvls),
-                     data_lvls = data_lvls
-                   )
-                   list(res = res,
-                        data_info = data_info)
-                 }
-               )
+      compl_data_info <- get_compl_data_info(
+        data_orig,
+        seed,
+        idvars = names(groups),
+        data_lvls = data_lvls
+      )
+
+      scen_res <- foreach::`%do%`(
+        foreach::foreach(scen = names(mis_scenarios),
+                         .packages = packages,
+                         .final = function(x)
+                           setNames(x, names(mis_scenarios))),
+        {
+          data <- create_missingness(data_orig, mis_scenarios[[scen]])
+          res <- if (!skip_fit) {
+            fit_models(models, formula = outcome_pars$formula,
+                       data = data, seed = seed, scen = scen)
+          }
+          data_info <- get_miss_data_info(
+            data,
+            seed,
+            scen = scen,
+            idvars = names(groups),
+            data_lvls = data_lvls
+          )
+          list(res = res,
+               data_info = data_info)
+        }
+      )
+
+      list(compl_data_info = compl_data_info,
+           scen_res = scen_res)
     })
 
   t1 <- Sys.time()
@@ -74,7 +144,7 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
   }
 
 
-  file_name <- paste0("simres_", outcome_pars$response_type, "_",
+  file_name <- paste0(file_name, "_",
                       format(Sys.time(), "%Y-%m-%d_%H-%M"), ".RData")
   out <- structure(
     list(sim_res = sim_res,
@@ -95,11 +165,12 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
     ), class = "simulation_result")
 
   if (exists("path") && !is.null(path)) {
-    save(out, file = file.path(path, file_name))
+    save(out, file = file.path(path, folder, file_name))
   }
 
   out
 }
+
 
 
 #' @export
