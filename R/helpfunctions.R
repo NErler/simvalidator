@@ -89,9 +89,10 @@ set_args <- function(fun, args) {
 #' @param result type of result summary (to be used to find `get_result_<...>()`)
 #' @param res_args optional list or arguments provided to the
 #'                    `get_result_<...>()` function
+#' @param skip_scen optional vector of the names of scenarios to be skipped
 #' @export
 set_model <- function(fun, fun_args = NULL, result = "default",
-                      res_args = NULL) {
+                      res_args = NULL, skip_scen = NULL) {
   args <- formals()
   call <- as.list(match.call())[-1L]
   call <- c(call, args[!names(args) %in% names(call)])
