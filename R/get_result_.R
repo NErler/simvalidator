@@ -123,9 +123,14 @@ get_result_lme4 <- function(fitted_model, type = NA, seed = NA, scen = NA,
 #'               `JointAI::confint()`, `JointAI::GR_crit` and
 #'               `JointAI::MC_error()`
 #' @param scen optional name of scenario
+#' @param type optional name for model to be included in summary
 #' @export
 get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L,
                                subset = NULL, scen = NA, type = NULL, ...) {
+
+  if (is.null(type)) {
+    type <- "JointAI"
+  }
 
   gr_crit <- JointAI::GR_crit(fitted_model, subset = subset,
                               autoburnin = FALSE,
