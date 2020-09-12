@@ -65,7 +65,7 @@ get_summary <- function(data, idvars = NULL, data_lvls = NULL) {
     if (inherits(x, "factor") | inherits(x, "logical")) {
       prop.table(table(category = x, exclude = NULL))
     } else if (inherits(x, "numeric")) {
-      density(x, n = 50)[c("x", "y")]
+      density(x, n = 50, cut = 0)[c("x", "y")]
     }
   })
 }
