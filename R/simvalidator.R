@@ -6,11 +6,11 @@
 #' @import utils
 #' @import stats
 #' @import ggplot2
-#'
 #' @docType package
 #' @name simvalidator
 NULL
 
 
 
-utils::globalVariables(c("seed", "value", "mis_scen"))
+utils::globalVariables(c("seed", "value", "mis_scen", ".", "x", "y",
+                         "L1", "category", "Freq"))
