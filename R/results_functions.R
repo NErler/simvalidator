@@ -1,5 +1,16 @@
 
 rbind_df_list <- function(df_list) {
+
+  if (!inherits(df_list[[1]][[1]], "data.frame") &
+      inherits(df_list[[1]][[1]], "list")) {
+
+    df_list <- lapply(df_list, function(x) {
+      lapply(seq_along(x[[1]]), function(k) {
+        do.call(rbind, lapply(x, "[[", k))
+      })
+    })
+  }
+
   list_by_model <- lapply(seq_along(df_list[[1]]), function(k) {
     do.call(rbind, lapply(df_list, "[[", k))
   })
@@ -23,8 +34,17 @@ rbind_df_list <- function(df_list) {
 #' @param object object of class simulation_result
 #' @export
 get_res_df <- function(object) {
+
+  default_out <- as.character(
+    check_formula_list(object$outcome_pars$formula)[[1]][[2]])
+
+  if (!is.list(object$outcome_pars$reg_coefs)) {
+    object$outcome_pars$reg_coefs <- setNames(
+      list(object$outcome_pars$reg_coefs), default_out)
+  }
+
   res_df <- rbind_df_list(lapply(object$sim_res, function(x) {
-    x[[1]]$res
+    lapply(x$scen_res, "[[", "res")
   }))
 
 
@@ -104,4 +124,40 @@ get_resid_sd_df <- function(resid_sd, res_df) {
   data.frame(outcome = res_df$outcome[match(nam, res_df$variable)],
              variable = nam,
              true_param = resid_sd)
+}
+
+
+
+print_summary_tab <- function(smry, name) {
+
+  if (!is.null(smry[[1]][[name]])) {
+
+    dat <- lapply(smry, function(x) {
+      as.data.frame(x[[name]])
+    }) %>% reshape2::melt(id.vars = colnames(.[[1]]))
+
+    cat("\n\n###", name, "\n\n")
+
+    if (inherits(smry[[1]][[name]], "list")) {
+      p <- ggplot(dat, aes(x = x, y = y, group = L1)) +
+        geom_line(alpha = 0.1) +
+        xlab(name) +
+        ylab("density")
+    } else if (inherits(smry[[1]][[name]], "table")) {
+      # p <- ggplot(dat, aes(x = factor(L1), y = Freq, fill = category)) +
+      #   geom_bar(stat = "identity") +
+      #   scale_fill_viridis_d(name = name) +
+      #   xlab("simulation") +
+      #   theme(axis.text.x = element_blank(),
+      #         axis.ticks.x = element_blank(),
+      #         legend.position = "top")
+
+      p <- ggplot(dat, aes(x = factor(category), y = Freq)) +
+        geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+        geom_jitter(width = 0.2, height = 0, alpha = 0.3) +
+        xlab("category") +
+        ylab("proportion")
+    }
+    print(p)
+  }
 }
