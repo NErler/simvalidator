@@ -5,7 +5,14 @@
 \title{Extract a summary of the model results from a lme4 model
 This function uses \code{fixef()} and \code{confint()}.}
 \usage{
-get_result_lme4(fitted_model, type = NA, seed = NA, ci_method = "Wald", ...)
+get_result_lme4(
+  fitted_model,
+  type = NA,
+  seed = NA,
+  scen = NA,
+  ci_method = "Wald",
+  ...
+)
 }
 \arguments{
 \item{fitted_model}{a fitted model object}
@@ -16,6 +23,8 @@ and description of results)}
 
 \item{seed}{optional (but) suggested seed value. Will be used when called
 from within \code{run_models()}.}
+
+\item{scen}{optional name of scenario}
 
 \item{ci_method}{method passed to \code{confint()}}
 

@@ -5,7 +5,7 @@
 \title{Extract a summary of the model results from a standard model
 This function uses \code{coef()} and \code{confint()}.}
 \usage{
-get_result_default(fitted_model, type = NA, seed = NA, ...)
+get_result_default(fitted_model, type = NA, seed = NA, scen = NA, ...)
 }
 \arguments{
 \item{fitted_model}{a fitted model object}
@@ -16,6 +16,8 @@ and description of results)}
 
 \item{seed}{optional (but) suggested seed value. Will be used when called
 from within \code{run_models()}.}
+
+\item{scen}{optional name of scenario}
 
 \item{...}{optional additional arguments for compatibility with other
 \verb{get_result_<...>} functions}

@@ -10,8 +10,12 @@ run_sim(
   outcome_pars,
   models,
   mis_scenarios = NULL,
+  sim_name = NULL,
+  batch_size = NULL,
+  batch_numbers = NULL,
   path = NULL,
-  packages = NULL
+  packages = NULL,
+  skip_fit = FALSE
 )
 }
 \arguments{
@@ -25,11 +29,22 @@ run_sim(
 
 \item{mis_scenarios}{list of missingness scenarios}
 
+\item{sim_name}{optional character string used in naming the output folder}
+
+\item{batch_size}{optional; number of simulations per batch (will be saved
+in separate file)}
+
+\item{batch_numbers}{optional index numbers of the batches of simulations to be run
+(in order to only run a subset)}
+
 \item{path}{where to save the results (file name will be generated
 automatically)}
 
 \item{packages}{optional character vector of packages passed to \code{.packages}
 in \code{foreach::foreach}}
+
+\item{skip_fit}{logical; should the step in which the models are fitted be
+skipped (to only get the simulated data)?}
 }
 \description{
 Run simulation

@@ -4,7 +4,7 @@
 \alias{fit_models}
 \title{Fit one more multiple models and obtain the model result}
 \usage{
-fit_models(models, formula, data, seed = NULL)
+fit_models(models, formula, data, seed = NULL, scen = NULL)
 }
 \arguments{
 \item{models}{a list of model information}
@@ -14,6 +14,8 @@ fit_models(models, formula, data, seed = NULL)
 \item{data}{a \code{data.frame}}
 
 \item{seed}{an optional seed value}
+
+\item{scen}{optional; name of scenario}
 }
 \description{
 Fit one more multiple models and obtain the model result

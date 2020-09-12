@@ -4,7 +4,13 @@
 \alias{set_model}
 \title{Set a model specification}
 \usage{
-set_model(fun, fun_args = NULL, result = "default", res_args = NULL)
+set_model(
+  fun,
+  fun_args = NULL,
+  result = "default",
+  res_args = NULL,
+  skip_scen = NULL
+)
 }
 \arguments{
 \item{fun}{a function}
@@ -16,6 +22,8 @@ set_model(fun, fun_args = NULL, result = "default", res_args = NULL)
 
 \item{res_args}{optional list or arguments provided to the
 \verb{get_result_<...>()} function}
+
+\item{skip_scen}{optional vector of the names of scenarios to be skipped}
 }
 \description{
 Set a model specification

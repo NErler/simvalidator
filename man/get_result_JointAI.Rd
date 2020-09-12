@@ -5,7 +5,15 @@
 \title{Extract a summary of the model results from a JointAI model
 This function uses \code{coef()} and \code{confint()}.}
 \usage{
-get_result_JointAI(fitted_model, seed = NA, outcome = 1L, subset = NULL, ...)
+get_result_JointAI(
+  fitted_model,
+  seed = NA,
+  outcome = 1L,
+  subset = NULL,
+  scen = NA,
+  type = NULL,
+  ...
+)
 }
 \arguments{
 \item{fitted_model}{a fitted model object}
@@ -19,6 +27,10 @@ extracted}
 \item{subset}{subset specification of \code{JointAI::coef()},
 \code{JointAI::confint()}, \code{JointAI::GR_crit} and
 \code{JointAI::MC_error()}}
+
+\item{scen}{optional name of scenario}
+
+\item{type}{optional name for model to be included in summary}
 
 \item{...}{optional additional arguments for compatibility with other
 \verb{get_result_<...>} functions}
