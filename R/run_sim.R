@@ -47,8 +47,9 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
   batches <- split(seeds, ceiling(seq_along(seeds)/batch_size))
 
   folder <- paste0("sim_", outcome_pars$response_type,
-                             if (!is.null(sim_name)) paste0("_", sim_name),
-                             "_", sim_pars$global_seed)
+                   if (!is.null(sim_name)) paste0("_", sim_name),
+                   "_", sim_pars$global_seed,
+                   "-", sim_pars$nr_sims)
 
   if (!dir.exists(folder)) {
     dir.create(folder)
@@ -58,7 +59,11 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
     batch_numbers <- seq_along(batches)
   }
 
+  cat("\nResults are written to\n", file.path(path, folder), "\n")
+  cat("Started at", format(Sys.time(), "%H:%M:%S"), "\n")
+
   for (b in batch_numbers) {
+    t0 <- Sys.time()
     batch_nr <- paste0("batch-",
                        sprintf(paste0("%0", nchar(length(batches)) ,"d"), b),
                        "of",
@@ -76,6 +81,11 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
                   skip_fit = skip_fit, packages = packages,
                   file_name = file_name, folder = folder,
                   path = path)
+
+    t1 <- Sys.time()
+    td <- t1 - t0
+    cat(batch_nr, "finished at", format(t1, "%H:%M:%S"),
+        paste0("(", round(td, 2), " ", attr(td, "units"), ")"))
   }
 }
 
