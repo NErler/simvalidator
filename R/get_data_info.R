@@ -32,7 +32,8 @@ get_compl_data_info <- function(data, seed, idvars, data_lvls, ...) {
 get_miss_data_info <- function(data, seed, idvars, data_lvls, scen = NULL, ...) {
   list(seed = seed,
        scen = scen,
-       perc_missing = get_perc_missing(data, idvars, data_lvls)
+       perc_missing = get_perc_missing(data, idvars, data_lvls),
+       compl_cases = get_nr_cc(data, idvars, data_lvls)
   )
 }
 
@@ -89,6 +90,16 @@ get_perc_missing <- function(data, idvars, data_lvls) {
     colMeans(is.na(
       subset(data, select = names(data_lvls)[data_lvls == id],
              subset = !duplicated(cbind(lvlone = 1:nrow(data), data)[[id]]))
+    ))
+  })
+}
+
+
+get_nr_cc <- function(data, idvars, data_lvls) {
+  nvapply(idvars, function(id) {
+    mean(complete.cases(
+      subset(data, select = names(data_lvls)[data_lvls == id],
+           subset = !duplicated(cbind(lvlone = 1:nrow(data), data)[[id]]))
     ))
   })
 }
