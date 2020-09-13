@@ -22,6 +22,7 @@ Imports:
     fitdistrplus,
     future,
     foreach,
+    magrittr,
     MASS,
     Matrix,
     ggplot2,
