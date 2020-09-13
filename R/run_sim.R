@@ -52,7 +52,7 @@ run_sim <- function(sim_pars, covar_def, outcome_pars, models,
                    "-", sim_pars$nr_sims)
 
   if (!dir.exists(folder)) {
-    dir.create(folder)
+    dir.create(file.path(path, folder))
   }
 
   if (is.null(batch_numbers) ) {
