@@ -210,14 +210,16 @@ subset(res_df, !is.na(covrg)) %>%
         covrg = mean(covrg)
         ) %>%
   reshape2::dcast(outcome + variable ~ type + scen, value.var = "covrg") %>%
-  kable(digits = 3, col.names = gsub(paste0("^", unique(res_df$type), "_", collapse = "|"),
-                                     "", colnames(.))) %>%
+  kable(digits = 3,
+        col.names = gsub(paste0("^", unique(res_df$type), "_", collapse = "|"),
+                                     "", colnames(.))
+        ) %>%
   kable_styling(full_width = FALSE) %>%
     add_header_above(c(" " = 2,
-                       setNames(rep(length(unique(res_df$scen)),
-                                    length(unique(res_df$type))),
-                                sort(unique(res_df$type)))))
-
+                       sapply(sort(unique(res_df$type)), function(k) {
+                         length(unique(res_df$scen[res_df$type == k]))
+                       }))) %>%
+  collapse_rows(columns = 1, valign = "top")
 
 
 
@@ -240,9 +242,10 @@ plyr::ddply(res_df, c('type', "outcome", 'variable', 'scen'), plyr::summarize,
                                      "", colnames(.))) %>%
   kable_styling(full_width = FALSE) %>%
   add_header_above(c(" " = 2,
-                     setNames(rep(length(unique(res_df$scen)),
-                                  length(unique(res_df$type))),
-                              sort(unique(res_df$type)))))
+                     sapply(sort(unique(res_df$type)), function(k) {
+                       length(unique(res_df$scen[res_df$type == k]))
+                     }))) %>%
+  collapse_rows(columns = 1, valign = "top")
 
 
 
@@ -277,6 +280,7 @@ ggplot(subset(res_df, !is.na(`MCE/SD`)),
   scale_color_gradient2(high = scales::muted("red"), mid = "yellow",
                         low = "darkgreen", midpoint = 0.07) +
   scale_y_continuous(trans = "log",
+                     breaks = c(0.005, 0.01, 0.025, 0.05, 0.1, 0.25),
                      name = 'Monte-Carlo Error / Posterior SD') +
   facet_wrap("outcome ~ variable", scales = 'free_y')
 
