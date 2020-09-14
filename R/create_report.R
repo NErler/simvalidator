@@ -20,6 +20,9 @@ create_report <- function(object, title = NULL,
         get(obj_name)
       })
       object <- collapse_sim_batches(object_list)
+    } else {
+      if (!file.exists(object_path))
+      errormsg("The path %s does not exist.", object_path)
     }
   }
 
@@ -56,3 +59,4 @@ collapse_sim_batches <- function(object) {
          file_name = file_name),
     l)
 }
+

@@ -4,9 +4,33 @@ rbind_df_list <- function(df_list) {
   if (!inherits(df_list[[1]][[1]], "data.frame") &
       inherits(df_list[[1]][[1]], "list")) {
 
+    # df_list
+    # |- sim1 = df_list[[1]]
+    #     |-scen1 = df_list[[1]][[1]]
+    #       |- modeltype1 = data.frame = df_list[[1]][[1]][[1]]
+    #       |- modeltype2
+    #     |-scen2
+    # |- sim2
+    # |-...
+    types <- unname(unlist(lapply(df_list[[1]], function(z) {
+      lapply(z, function(k) unique(k$type))
+    })))
+
     df_list <- lapply(df_list, function(x) {
-      lapply(seq_along(x[[1]]), function(k) {
-        do.call(rbind, lapply(x, "[[", k))
+      # x is the output from one simulation and is a list with one element per
+      # scenario
+      nlapply(types, function(k) {
+        do.call(rbind,
+        lapply(x, function(z) {
+        # z is the output for one scenario, and is a list with one element per
+        # model type
+          do.call(rbind,
+                  lapply(z, function(zz) {
+                    if (isTRUE(unique(zz$type) == k)) zz
+                  })
+          )
+        })
+        )
       })
     })
   }
@@ -15,7 +39,7 @@ rbind_df_list <- function(df_list) {
     do.call(rbind, lapply(df_list, "[[", k))
   })
 
-  colnames <- unique(unlist(lapply(list_by_model, colnames)))
+  colnames <- unique(unlist(lapply(list_by_model, names)))
 
   do.call(rbind,
           lapply(list_by_model, function(x) {
