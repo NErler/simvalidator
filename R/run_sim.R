@@ -126,7 +126,9 @@ run_sim_batch <- function(seeds,
                          .final = function(x)
                            setNames(x, names(mis_scenarios))),
         {
-          data <- create_missingness(data_orig, mis_scenarios[[scen]])
+          data <- create_missingness(data_orig, mis_scenarios[[scen]],
+                                     idvars = setdiff(names(groups), "lvlone"),
+                                     groups = groups, varlvls = data_lvls)
           res <- if (!skip_fit) {
             fit_models(models, formula = outcome_pars$formula,
                        data = data, seed = seed, scen = scen)

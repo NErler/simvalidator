@@ -8,6 +8,7 @@ create_missingness <- function(data, mis_scen, varlvls = NULL,
   } else {
     args <- c(list(data = data),
               mis_scen$fun_args,
+              idvars = idvars,
               if (is.null(mis_scen$fun_args$varlvls)) {
                 list(varlvls = varlvls)
               },
