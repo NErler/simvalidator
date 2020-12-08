@@ -38,14 +38,19 @@ create_report <- function(object, title = NULL,
 
 
 
-collapse_sim_batches <- function(object) {
-  sim_res <- unlist(lapply(object, "[[", "sim_res"), recursive = FALSE)
-  time <- do.call(sum, lapply(object, "[[", "time"))
-  file_name <- cvapply(object, "[[", "file_name")
+collapse_sim_batches <- function(object_list) {
+  sim_res <- unlist(lapply(object_list, "[[", "sim_res"), recursive = FALSE)
+  compl_data_info <- unlist(lapply(object_list, "[[", "compl_data_info"),
+                            recursive = FALSE)
 
-  l <- nlapply(setdiff(names(object[[1]]), c("sim_res", "time", "file_name")),
+  time <- do.call(sum, lapply(object_list, "[[", "time"))
+  file_name <- cvapply(object_list, "[[", "file_name")
+
+
+  l <- nlapply(setdiff(names(object_list[[1]]),
+                       c("sim_res", "time", "file_name", "compl_data_info")),
                function(k) {
-                 x <- unique(lapply(object, "[[", k))
+                 x <- unique(lapply(object_list, "[[", k))
                  if (length(x) > 1) {
                    if (length(unique(lapply(x, deparse))) > 1) {
                      errormsg("There are different versions of %s.", dQuote(k))
@@ -55,6 +60,7 @@ collapse_sim_batches <- function(object) {
                })
   c(
     list(sim_res = sim_res,
+         compl_data_info = compl_data_info,
          time = time,
          file_name = file_name),
     l)

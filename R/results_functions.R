@@ -67,9 +67,12 @@ get_res_df <- function(object) {
       list(object$outcome_pars$reg_coefs), default_out)
   }
 
-  res_df <- rbind_df_list(lapply(object$sim_res, function(x) {
-    lapply(x$scen_res, "[[", "res")
-  }))
+  res_df <- rbind_df_list(
+    lapply(object$sim_res, "[[", "res")
+    # lapply(object$sim_res, function(x) {
+    #   lapply(x$res, "[[", "res")
+    # })
+  )
 
 
   true_param_df <- if (is.list(object$outcome_pars$reg_coefs)) {
@@ -121,15 +124,17 @@ get_otherpars_df <- function(other_pars, res_df)
 
 
 get_vcov_df <- function(ranef_vcov, res_df) {
-  do.call(rbind,
-          lapply(ranef_vcov, function(vcov) {
-            nam <- get_vcov_names(vcov)
-            data.frame(outcome = res_df$outcome[match(nam, res_df$variable)],
-                       variable = nam,
-                       true_param = vcov[lower.tri(vcov, diag = TRUE)]
-            )
-          })
-  )
+  if (!is.null(res_df)) {
+    do.call(rbind,
+            lapply(ranef_vcov, function(vcov) {
+              nam <- get_vcov_names(vcov)
+              data.frame(outcome = res_df$outcome[match(nam, res_df$variable)],
+                         variable = nam,
+                         true_param = vcov[lower.tri(vcov, diag = TRUE)]
+              )
+            })
+    )
+  }
 }
 
 get_vcov_names <- function(vcov) {
@@ -144,10 +149,15 @@ get_vcov_names <- function(vcov) {
 
 
 get_resid_sd_df <- function(resid_sd, res_df) {
-  nam <- paste0("sigma_", names(resid_sd))
-  data.frame(outcome = res_df$outcome[match(nam, res_df$variable)],
-             variable = nam,
-             true_param = resid_sd)
+
+  if (!is.null(res_df)) {
+
+    nam <- paste0("sigma_", names(resid_sd))
+    data.frame(outcome = res_df$outcome[match(nam, res_df$variable)],
+               variable = nam,
+               true_param = resid_sd)
+
+  }
 }
 
 

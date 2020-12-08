@@ -44,9 +44,7 @@ outvars <- lapply(check_formula_list(object$outcome_pars$formula),
                   }) %>%
   unlist
 
-data_summary <- lapply(object$sim_res, function(x) {
-  x$compl_data_info$summary
-})
+data_summary <- lapply(object$compl_data_info, "[[", "summary")
 
 
 #' # Data
@@ -62,8 +60,8 @@ from the target size since repeated measurements of covariates are simulated
 first and deleted after simulation of the time-to-event outcome if they occur
 after the event / censoring time."
 reshape2::melt(
-  lapply(object$sim_res, function(x) {
-    data.frame(t(x$compl_data_info$size))
+  lapply(object$compl_data_info, function(x) {
+    data.frame(t(x$size))
   }), id.vars = NULL) %>%
   ggplot(aes(y = 1, x = value)) +
   geom_violin() +
@@ -97,13 +95,12 @@ for (k in setdiff(names(data_summary[[1]]), outvars)) {
 #'
 #' ## Missing Data
 lapply(object$sim_res, function(x) {
-  lapply(x$scen_res, function(z) {
-    as.data.frame(t(unlist(unname(z$data_info$perc_missing))))
-  })
-}) %>% reshape2::melt(id.vars = NULL) %>%
+  cbind(data.frame(t(unlist(unname(x$data_info$perc_missing)))),
+        scen = x$data_info$scen)
+}) %>% reshape2::melt(id.vars = "scen") %>%
   ggplot(aes(y = variable, x = value,
-             group = interaction(variable, factor(L2)),
-             fill = L2, color = L2)) +
+             group = interaction(variable, factor(scen)),
+             fill = scen, color = scen)) +
   geom_boxplot(alpha = 0.2) +
   # geom_jitter(alpha = 0.2) +
   scale_x_continuous(name = "missing values (%)", limits = c(0, 1),
@@ -116,7 +113,7 @@ lapply(object$sim_res, function(x) {
 #' ## Bias and CI width {.tabset}
 n_rows <- ceiling(nrow(unique(subset(res_df, !is.na(bias),
                                      select = c("variable", "outcome"))))/4)
-#' ### absolute bias
+#' ### absolute bias {.tabset .tabset-pills}
 #+ fig.width = 8, fig.height = n_rows * 2 + 0.5
 ggplot(subset(res_df, !is.na(bias)),
        aes(x = type, y = bias, group = interaction(type, scen),
@@ -134,8 +131,33 @@ ggplot(subset(res_df, !is.na(bias)),
                         aesthetics = c("color", "fill"))
 
 
+#+ results = "asis", fig.width = 10, fig.height = 8
+for (out in unique(res_df$outcome)) {
+
+  cat("\n\n####", out, "\n\n")
+
+  p <- ggplot(subset(res_df, !is.na(bias) & outcome == out),
+         aes(x = type, y = bias, group = interaction(type, scen),
+             color = scen, fill = scen)) +
+    facet_wrap("variable", scales = 'free', ncol = 4) +
+    geom_hline(yintercept = 0, linetype = 2, size = 1, color = 'darkgreen') +
+    xlab('') +
+    ylab('absolute bias') +
+    geom_violin(draw_quantiles = c(0.25, 0.5, 0.75), alpha = 0.2) +
+    geom_point(position = position_jitterdodge(jitter.width = 0.2,
+                                               dodge.width = 1),
+               alpha = 0.4) +
+    theme(legend.position = "top") +
+    scale_color_viridis_d(end = 0.85, name = "scenario",
+                          aesthetics = c("color", "fill"))
+
+    print(p)
+}
+
+
+
 #' ### relative bias
-#+ fig.width = 8, fig.height = n_rows * 2 + 0.5
+#+ relbias, fig.width = 8, fig.height = n_rows * 2 + 0.5, eval = nrow(res_df) > 0
 ggplot(subset(res_df, !is.na(relbias)),
        aes(x = type, y = relbias,
            group = interaction(type, scen),
@@ -154,7 +176,7 @@ ggplot(subset(res_df, !is.na(relbias)),
 
 
 #' ### parameter estimate
-#+ fig.width = 8, fig.height = n_rows * 2 + 0.5
+#+ estim, fig.width = 8, fig.height = n_rows * 2 + 0.5, eval = nrow(res_df) > 0
 ggplot(subset(res_df, !is.na(bias)),
        aes(x = type, y = Mean, group = interaction(type, scen),
            fill = scen, color = scen)) +
@@ -173,7 +195,7 @@ ggplot(subset(res_df, !is.na(bias)),
 
 
 #' ### CI width
-#+ fig.width = 8, fig.height = 8
+#+ CIwidth, fig.width = 8, fig.height = 8, eval = nrow(res_df) > 0
 ggplot(subset(res_df, !is.na(bias)),
        aes(x = type, y = CIwidth, group = interaction(type, scen),
            fill = scen, color = scen)) +
@@ -192,6 +214,7 @@ ggplot(subset(res_df, !is.na(bias)),
 #' ## Coverage & MSE {.tabset}
 #' ### Coverage
 #'
+#+ covrg, eval = nrow(res_df) > 0
 subset(res_df, !is.na(covrg)) %>%
 plyr::ddply(c('type', "outcome", 'variable', 'scen'), plyr::summarize,
             covrg = mean(covrg)
@@ -224,6 +247,7 @@ subset(res_df, !is.na(covrg)) %>%
 
 
 #' ### MSE
+#+ MSE, eval = nrow(res_df) > 0
 plyr::ddply(res_df, c('type', "outcome", 'variable', 'scen'), plyr::summarize,
             MSE = mean(bias^2)
 ) %>%
@@ -251,7 +275,7 @@ plyr::ddply(res_df, c('type', "outcome", 'variable', 'scen'), plyr::summarize,
 
 #' ## MCMC criteria
 #' ### Gelman-Rubin criterion
-#+ fig.width = 8, fig.height = 8
+#+ GRcrit, fig.width = 8, fig.height = 8, eval = nrow(res_df) > 0
 ggplot(subset(res_df, !is.na(`GR-crit`)),
        aes(x = type, y = `GR-crit`, group = interaction(type, scen))) +
   geom_violin(draw_quantiles = 0.5) +
@@ -267,8 +291,26 @@ ggplot(subset(res_df, !is.na(`GR-crit`)),
   facet_wrap("outcome ~ variable")
 
 
+
+ggplot(subset(res_df, !is.na(`GR-crit`)),
+       aes(x = variable, y = `GR-crit`, group = interaction(scen, variable))) +
+  geom_violin(draw_quantiles = 0.5) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2,
+                                             dodge.width = 1),
+             aes(color = `GR-crit`)) +
+  geom_hline(yintercept = 1.2, color = grey(0.5), lty = 2) +
+  geom_hline(yintercept = 1.1, color = grey(0.5), lty = 3) +
+  scale_color_gradient2(high = scales::muted("red"), mid = "yellow",
+                        low = "darkgreen", midpoint = 1.2) +
+  scale_y_continuous(trans = "log") +
+  ylab('Gelman-Rubin criterion') +
+  facet_grid("outcome ~ scen", scales = "free_y") +
+  coord_flip()
+
+
+
 #' ### Monte-Carlo error
-#+ fig.width = 8, fig.height = 8
+#+ MCE, fig.width = 8, fig.height = 8, eval = nrow(res_df) > 0
 ggplot(subset(res_df, !is.na(`MCE/SD`)),
        aes(x = type, y = `MCE/SD`,
            group = scen)) +
@@ -285,15 +327,31 @@ ggplot(subset(res_df, !is.na(`MCE/SD`)),
   facet_wrap("outcome ~ variable", scales = 'free_y')
 
 
+
+ggplot(subset(res_df, !is.na(`MCE/SD`)),
+       aes(y = `MCE/SD`, x = variable, group = interaction(scen, variable))) +
+  geom_violin(draw_quantiles = 0.5) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2,
+                                             dodge.width = 1),
+             aes(color = `MCE/SD`), alpha = 0.5) +
+  coord_flip() +
+  scale_color_gradient2(high = scales::muted("red"), mid = "yellow",
+                        low = "darkgreen", midpoint = 0.07) +
+  scale_y_continuous(trans = "log",
+                     breaks = c(0.005, 0.01, 0.025, 0.05, 0.1, 0.25),
+                     name = 'Monte-Carlo Error / Posterior SD') +
+  geom_hline(yintercept = 0.05, color = grey(0.5), lty = 2) +
+  facet_grid("outcome ~ scen", scales = "free_y")
+
+
+
 #' # Technical Stuff
-if (any(object$sim_res[[1]]$compl_data_info$nr_tries)) {
+if (!is.null(object$compl_data_info[[1]]$nr_tries)) {
   reshape2::melt(
-    lapply(object$sim_res, function(x) {
-      nr_tries = x$compl_data_info$nr_tries
-    })
+    lapply(object$compl_data_info, "[[", "nr_tries")
   ) %>%
-    ggplot(aes(x = factor(L1),
-               fill = factor(value, labels = rev(sort(unique(value)))))) +
+    dplyr::mutate(value = factor(value, levels = rev(sort(unique(value))))) %>%
+    ggplot(aes(x = factor(L1), fill = value)) +
     geom_bar() +
     xlab("Simulation Nr.") +
     scale_fill_viridis_d(name = "nr_tries") +
@@ -302,10 +360,11 @@ if (any(object$sim_res[[1]]$compl_data_info$nr_tries)) {
           legend.position = "top")
 }
 
-unique(subset(res_df,
-              select = c("n_iter", "seed", "n_chain"),
-              !is.na(n_iter))) %>%
-  ggplot(aes(x = factor(n_chain), y = n_iter)) +
-  geom_violin() +
-  geom_jitter(width = 0.2, height = 0)
-
+if (nrow(res_df) > 0) {
+  unique(subset(res_df,
+                select = c("n_iter", "seed", "n_chain"),
+                !is.na(n_iter))) %>%
+    ggplot(aes(x = factor(n_chain), y = n_iter)) +
+    geom_violin() +
+    geom_jitter(width = 0.2, height = 0)
+}
