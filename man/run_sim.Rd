@@ -11,6 +11,7 @@ run_sim(
   models,
   mis_scenarios = NULL,
   sim_name = NULL,
+  scenarios = NULL,
   batch_size = NULL,
   batch_numbers = NULL,
   path = NULL,

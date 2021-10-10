@@ -4,12 +4,12 @@
 \alias{get_miss_data_info}
 \title{Summarize information of the incomplete simulated data}
 \usage{
-get_miss_data_info(data, seed, idvars, data_lvls, scen = NULL, ...)
+get_miss_data_info(data, data_seed, idvars, data_lvls, scen = NULL, ...)
 }
 \arguments{
 \item{data}{a \code{data.frame}}
 
-\item{seed}{the seed value}
+\item{data_seed}{the seed value used to generate the data}
 
 \item{idvars}{optional vector with names of ID variables that should be used
 to identify levels in a multi-level setting}

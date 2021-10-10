@@ -7,18 +7,18 @@ This function uses \code{coef()} and \code{confint()}.}
 \usage{
 get_result_JointAI(
   fitted_model,
-  seed = NA,
+  data_seed = NA,
   outcome = 1L,
   subset = NULL,
-  scen = NA,
-  type = NULL,
+  miss_scenario = NA,
+  model = NULL,
   ...
 )
 }
 \arguments{
 \item{fitted_model}{a fitted model object}
 
-\item{seed}{optional (but) suggested seed value. Will be used when called
+\item{data_seed}{optional (but) suggested seed value. Will be used when called
 from within \code{run_models()}.}
 
 \item{outcome}{integer identifying for which outcome the results should be
@@ -28,9 +28,9 @@ extracted}
 \code{JointAI::confint()}, \code{JointAI::GR_crit} and
 \code{JointAI::MC_error()}}
 
-\item{scen}{optional name of scenario}
+\item{miss_scenario}{optional name of missingness scenario}
 
-\item{type}{optional name for model to be included in summary}
+\item{model}{optional name for model to be included in summary}
 
 \item{...}{optional additional arguments for compatibility with other
 \verb{get_result_<...>} functions}
