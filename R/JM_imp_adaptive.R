@@ -61,12 +61,49 @@ JM_imp_adaptive <- function(formula, data, df_basehaz = 6,
 
 
 
+#' Add samples adaptively
+#' @inheritParams JointAI::model_imp
+#' @inheritParams run_gr_check
+#' @export
+#'
+add_samples_adaptive <- function(fitted_model, extra_iter = NULL,
+                                 minsize = 500L, step = 200L, subset = NULL,
+                                 cutoff = 1.2, prop = 0.8,
+                                 gr_max = 1.5, max_try = 5L) {
 
 
-get_inits_JM <- function(formula, data, inits_iter, n_chains) {
+  check_list <- run_gr_check(fitted_model = fitted_model,
+                             extra_iter = extra_iter, minsize = minsize,
+                             step = step, subset = subset, cutoff = cutoff,
+                             prop = prop,
+                             gr_max = gr_max, max_try = max_try)
+
+  chains <- seq_along(check_list$fitted_model$MCMC)
+  if (!is.null(check_list$exclude_chains)) {
+    chains <- chains[-check_list$exclude_chains]
+  }
+
+  check_list$fitted_model$MCMC <- window(check_list$fitted_model$MCMC[chains],
+                                         start = check_list$strt)
+  check_list$fitted_model
+}
+
+
+
+
+
+#' Generate initial values for a JointAI joint model
+#' @param formula the model formula
+#' @param data the dataset
+#' @param inits_iter number of iterations
+#' @param n_chains  number of chains (has to be the same as in the joint model)
+#' @param seed seed value
+#'
+#' @export
+get_inits_JM <- function(formula, data, inits_iter, n_chains, seed = NULL) {
 
   prep <- JointAI::lme_imp(formula[-1], data = data, n.iter = inits_iter,
-                           n.chains = n_chains)
+                           n.chains = n_chains, seed = seed)
 
   as_inits(prep)
 }
