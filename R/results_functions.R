@@ -67,9 +67,20 @@ get_res_df <- function(object) {
       list(object$outcome_pars$reg_coefs), default_out)
   }
 
-  res_df <- rbind_df_list(lapply(object$sim_res, function(x) {
-    lapply(x$scen_res, "[[", "res")
-  }))
+  # res_df <- rbind_df_list(lapply(object$sim_res, function(x) {
+  #   lapply(x$scen_res, "[[", "res")
+  # }))
+
+
+
+  res_df <- object$sim_res %>%
+    lapply(., function(x) {
+      x$model <- attr(x, "model")
+      x$miss_scenario <- attr(x, "miss_scenario")
+      x$data_seed <- attr(x, "data_seed")
+      x
+    }) %>%
+    do.call(rbind, .)
 
 
   true_param_df <- if (is.list(object$outcome_pars$reg_coefs)) {

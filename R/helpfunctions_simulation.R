@@ -1,3 +1,13 @@
+
+
+
+next_seed <- function(seed) {
+  set.seed(seed)
+  sample.int(1e6, size = 1)
+}
+
+
+
 sim_ranefs <- function(ranef_vcov, n_ranef) {
   # simulate random effects from a multivariate normal distribution
   # with given variance-covariance matrix

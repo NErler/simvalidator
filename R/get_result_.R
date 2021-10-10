@@ -1,4 +1,27 @@
 
+
+
+
+get_result <- function(fitted_model, model, run) {
+  result_fct <- paste0("get_result_",
+                       model$other_args$result_args$result_type)
+
+  res_args <- model$other_args$result_args %>%
+    eval() %>%
+    `[`(setdiff(names(.), c("result_type")))
+
+  res_args <- c(res_args,
+                list(data_seed = run$data_seed,
+                     miss_scenario = run$miss_scenario,
+                     model = run$model,
+                     fitted_model = fitted_model)
+  )
+
+  do.call(get(result_fct), res_args)
+}
+
+
+
 #' Extract a summary of the model results from a standard model
 #' This function uses `coef()` and `confint()`.
 #' @param fitted_model a fitted model object
@@ -113,7 +136,7 @@ get_result_lme4 <- function(fitted_model, type = NA, seed = NA, scen = NA,
 #' Extract a summary of the model results from a JointAI model
 #' This function uses `coef()` and `confint()`.
 #' @param fitted_model a fitted model object
-#' @param seed optional (but) suggested seed value. Will be used when called
+#' @param data_seed optional (but) suggested seed value. Will be used when called
 #'             from within `run_models()`.
 #' @param outcome integer identifying for which outcome the results should be
 #'                extracted
@@ -122,13 +145,14 @@ get_result_lme4 <- function(fitted_model, type = NA, seed = NA, scen = NA,
 #' @param subset subset specification of `JointAI::coef()`,
 #'               `JointAI::confint()`, `JointAI::GR_crit` and
 #'               `JointAI::MC_error()`
-#' @param scen optional name of scenario
-#' @param type optional name for model to be included in summary
+#' @param miss_scenario optional name of missingness scenario
+#' @param model optional name for model to be included in summary
 #' @export
-get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L,
-                               subset = NULL, scen = NA, type = NULL, ...) {
+get_result_JointAI <- function(fitted_model, data_seed = NA, outcome = 1L,
+                               subset = NULL, miss_scenario = NA,
+                               model = NULL, ...) {
 
-  if (is.null(type)) {
+  if (is.null(model)) {
     type <- "JointAI"
   }
 
@@ -141,49 +165,49 @@ get_result_JointAI <- function(fitted_model, seed = NA, outcome = 1L,
   pars <- JointAI::parameters(fitted_model)
   pars$varname[is.na(pars$varname)] <- pars$coef[is.na(pars$varname)]
 
-  coefs <- coef(fitted_model)
-  cis <- confint(fitted_model)
+
+  coefs <- coef(fitted_model) %>% {
+    lapply(names(.), function(out) {
+      data.frame(outcome = unname(JointAI::clean_survname(out)),
+                 variable = names(.[[out]]),
+                 Mean = .[[out]]
+      )
+    })} %>%
+    do.call(rbind, .)
+
+  cis <- confint(fitted_model) %>% {
+    lapply(names(.), function(out) {
+      data.frame(outcome = unname(JointAI::clean_survname(out)),
+                 variable = rownames(.[[out]]),
+                 .[[out]],
+                 check.names = FALSE
+      )
+    })} %>%
+    do.call(rbind, .)
+
+
+
 
   res <- Reduce(merge,
-                list(
-                  data.frame(
-                    seed = seed,
-                    scen = scen,
-                    time = sum(as.numeric(fitted_model$comp_info$duration,
-                                          units = "hours")),
-                    type = 'JointAI',
-                    n_iter = nrow(fitted_model$MCMC[[1]]),
-                    n_chain = length(fitted_model$MCMC)
-                  ),
-                  do.call(rbind,
-                          lapply(names(coefs), function(out) {
-                            data.frame(outcome = unname(JointAI::clean_survname(out)),
-                                       variable = names(coefs[[out]]),
-                                       Mean = coefs[[out]]
-                            )
-                          })
-                  ),
-                  do.call(rbind,
-                          lapply(names(cis), function(out) {
-                            data.frame(outcome = unname(JointAI::clean_survname(out)),
-                                       variable = rownames(cis[[out]]),
-                                       cis[[out]],
-                                       check.names = FALSE
-                            )
-                          })
-                  ),
-                  match_crit(pars, gr_crit, name = "GR-crit"),
-                  match_crit(pars, mce, name = "MCE/SD")
-                )
+                list(coefs, cis,
+                     match_crit(pars, gr_crit, name = "GR-crit"),
+                     match_crit(pars, mce, name = "MCE/SD"))
   )
 
-
-  attr(res, "pkg_version") <- fitted_model$comp_info$JointAI_version
-  attr(res, "future") <- fitted_model$comp_info$future
-  attr(res, "R.version") <- fitted_model$comp_info$sessionInfo$R.version$version.string
-  attr(res, "platform") <- fitted_model$comp_info$sessionInfo$platform
-
-  res
+  structure(res,
+            data_seed = data_seed,
+            model_seed = fitted_model$mcmc_settings$seed,
+            miss_scenario = miss_scenario,
+            duration_mins = sum(as.numeric(fitted_model$comp_info$duration,
+                                           units = "mins")),
+            model = model,
+            n_iter = nrow(fitted_model$MCMC[[1]]),
+            n_chain = length(fitted_model$MCMC),
+            pkg_version = fitted_model$comp_info$JointAI_version,
+            future = fitted_model$comp_info$future,
+            R.version = fitted_model$comp_info$sessionInfo$R.version$version.string,
+            platform = fitted_model$comp_info$sessionInfo$platform
+  )
 }
 
 

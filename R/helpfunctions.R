@@ -84,26 +84,82 @@ set_args <- function(fun, args) {
 
 #' Set a model specification
 #' @param fun a function
-#' @param fun_args optional list of arguments (not including `formula` and
-#'                 `data`) to be provided to `fun`
-#' @param result type of result summary (to be used to find `get_result_<...>()`)
-#' @param res_args optional list or arguments provided to the
-#'                    `get_result_<...>()` function
-#' @param skip_scen optional vector of the names of scenarios to be skipped
+# @param fun_args optional list of arguments (not including `formula` and
+#                 `data`) to be provided to `fun`
+# @param result type of result summary (to be used to find `get_result_<...>()`)
+# @param res_args optional list or arguments provided to the
+#                    `get_result_<...>()` function
+# @param skip_scen optional vector of the names of scenarios to be skipped
 #' @export
-set_model <- function(fun, fun_args = NULL, result = "default",
-                      res_args = NULL, skip_scen = NULL) {
-  args <- formals()
-  call <- as.list(match.call())[-1L]
-  call <- c(call, args[!names(args) %in% names(call)])
+# set_model <- function(fun, fun_args = NULL, result = "default",
+#                       res_args = NULL, skip_scen = NULL) {
+#   args <- formals()
+#   call <- as.list(match.call())[-1L]
+#   call <- c(call, args[!names(args) %in% names(call)])
+#
+#   structure(c(lapply(call, eval),
+#               list(call = call)),
+#             class = "model_specification")
+# }
 
-  structure(c(lapply(call, eval),
-              list(call = call)),
-            class = "model_specification")
+
+set_model <- function(fun, ...) {
+  args <- as.list(match.call())[-1]
+  args$default_args <- formals(fun)
+
+  calls <- vapply(args, inherits, "call", FUN.VALUE = logical(1L))
+  args[calls] <- lapply(args[calls], eval)
+
+  args
 }
+
+
 
 
 make_cc_subset <- function(data, formula) {
   vars <- JointAI::all_vars(formula)
   droplevels(subset(data, subset = complete.cases(data[, vars])))
+}
+
+
+
+
+#' Create a data.frame of the scenarios to run.
+#' A scenario consists of the missing data scenario and model to be run on this
+#' data.
+#'
+#' @param miss_scenario a named list of missingness scenarios
+#' @param model a named list of model specifications
+#'
+#' @export
+
+set_scenarios <- function(miss_scenarios, models) {
+  if (is.null(names(models))) {
+    errormsg("The different models should be named.")
+  }
+  if (is.null(names(miss_scenarios))) {
+    errormsg("The different missingness scenarios should be named.")
+  }
+
+  expand.grid(miss_scenario = names(mis_scenarios),
+              model = names(models))
+}
+
+
+
+
+
+check_resfcts <- function(models) {
+
+  fcts_exist <- vapply(models, function(m) {
+    m$other_args$result_args$result_type %>%
+      paste0("get_result_", .) %>%
+      get %>%
+      inherits(., "function")
+  }, FUN.VALUE = logical(1L))
+
+  if (any(!fcts_exist)) {
+    errormsg("%s is not a function.",
+             names(fcts_exist)[!fcts_exist])
+  }
 }
