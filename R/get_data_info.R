@@ -8,13 +8,13 @@
 
 
 #' Summarize information of the complete simulated data
-#' @param seed the seed value
+#' @param data_seed the seed value used to generate the data
 #' @param data_lvls named vector giving the level of each variable
 #' @inheritParams delete_MCAR
 #' @param ... optional additional arguments
 #' @export
-get_compl_data_info <- function(data, seed, idvars, data_lvls, ...) {
-  list(seed = seed,
+get_compl_data_info <- function(data, data_seed, idvars, data_lvls, ...) {
+  list(data_seed = data_seed,
        summary = get_summary(data, idvars, data_lvls),
        size = get_size(data, idvars),
        nr_tries = attr(data, "nr_tries")
@@ -23,14 +23,14 @@ get_compl_data_info <- function(data, seed, idvars, data_lvls, ...) {
 
 
 #' Summarize information of the incomplete simulated data
-#' @param seed the seed value
+#' @param data_seed the seed value used to generate the data
 #' @param data_lvls named vector giving the level of each variable
 #' @inheritParams delete_MCAR
 #' @param scen optional, name of the missingness scenario
 #' @param ... optional additional arguments; not used
 #' @export
-get_miss_data_info <- function(data, seed, idvars, data_lvls, scen = NULL, ...) {
-  list(seed = seed,
+get_miss_data_info <- function(data, data_seed, idvars, data_lvls, scen = NULL, ...) {
+  list(data_seed = data_seed,
        scen = scen,
        perc_missing = get_perc_missing(data, idvars, data_lvls),
        compl_cases = get_nr_cc(data, idvars, data_lvls)

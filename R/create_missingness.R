@@ -2,7 +2,7 @@
 #' @inheritParams delete_MCAR
 #' @param mis_scen a missingness scenario
 create_missingness <- function(data, mis_scen, varlvls = NULL,
-                               groups = NULL, idvars = NULL, seed = NULL) {
+                               groups = NULL, idvars = NULL, mis_seed = NULL) {
   if (is.null(mis_scen)) {
     return(data)
   } else {
@@ -15,8 +15,8 @@ create_missingness <- function(data, mis_scen, varlvls = NULL,
               if (is.null(mis_scen$fun_args$groups)) {
                 list(groups = groups)
               },
-              if (is.null(mis_scen$fun_args$seed)) {
-                c(seed = seed)
+              if (is.null(mis_scen$fun_args$mis_seed)) {
+                c(mis_seed = mis_seed)
               })
     do.call(mis_scen$fun, args)
   }
