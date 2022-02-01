@@ -10,7 +10,7 @@ create_missingness(
   varlvls = NULL,
   groups = NULL,
   idvars = NULL,
-  seed = NULL
+  mis_seed = NULL
 )
 }
 \arguments{
@@ -25,7 +25,7 @@ create_missingness(
 \item{idvars}{optional vector with names of ID variables that should be used
 to identify levels in a multi-level setting}
 
-\item{seed}{optional seed value}
+\item{mis_seed}{optional seed value}
 }
 \description{
 Create missingness in a \code{data.frame}

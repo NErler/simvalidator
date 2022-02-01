@@ -47,3 +47,50 @@ fit_models <- function(models, formula, data, seed = NULL, scen = NULL) {
 
   result
 }
+
+
+
+fit_model <- function(model, data) {
+
+  args <- model[!names(model) %in% c("model", "other_args)")]
+
+  args$data <- if (isTRUE(model$other_args$cc)) {
+    make_cc_subset(data, model$formula)
+  } else {
+    data
+  }
+
+
+  if (!is.null(model$other_args$init_args)) {
+
+    n_chains <- if (is.null(args$n.chains)) {
+      args$default_args$n.chains
+    } else {
+      args$n.chains
+    }
+
+    init_args <- model$other_args$init_args %>%
+      eval %>%
+      `[`(setdiff(names(.), "fun"))
+    init_args$formula = args$formula
+    init_args$data = args$data
+    init_args$n_chains = n_chains
+    init_args$seed = next_seed(attr(data, "data_seed"))
+
+
+    inits <- do.call(eval(model$other_args$init_args$fun), init_args)
+
+    args$inits <- inits
+  }
+
+
+  args$seed <- next_seed(attr(data, "data_seed"))
+  fitted_model <- do.call(eval(model$fun), args)
+
+  if (!is.null(model$other_args$add_samples_adaptive)) {
+    args_adaptive <- eval(eval(model$other_args$add_samples_adaptive))
+    args_adaptive$fitted_model <- fitted_model
+    fitted_model <- do.call(add_samples_adaptive, args_adaptive)
+  }
+  fitted_model
+}

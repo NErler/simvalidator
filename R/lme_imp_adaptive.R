@@ -43,19 +43,6 @@ lme_imp_adaptive <- function(fixed, data, random,
 
 
 
-
-
-
-
-get_inits_JM <- function(formula, data, inits_iter, n_chains) {
-
-  prep <- JointAI::lme_imp(formula[-1], data = data, n.iter = inits_iter,
-                           n.chains = n_chains)
-
-  as_inits(prep)
-}
-
-
 #' Return the current state of a 'JointAI' model as list to be used as
 #' initial values
 #' @param object an object of class 'JointAI'

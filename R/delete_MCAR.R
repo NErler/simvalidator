@@ -6,15 +6,15 @@
 #'   to identify levels in a multi-level setting
 #' @param varlvls named vector giving the level of each variable
 #' @param groups list with grouping information
-#' @param seed optional seed value
+#' @param mis_seed optional seed value
 #'
 #' @export
 
 delete_MCAR <- function(data, missing, idvars = NULL, varlvls = NULL,
-                        groups = NULL, seed = NULL) {
+                        groups = NULL, mis_seed = NULL) {
 
-  if (!is.null(seed)) {
-    set.seed(seed)
+  if (!is.null(mis_seed)) {
+    set.seed(mis_seed)
   }
 
   ## identify groups and variable levels

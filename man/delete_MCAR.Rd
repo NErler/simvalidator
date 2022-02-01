@@ -10,7 +10,7 @@ delete_MCAR(
   idvars = NULL,
   varlvls = NULL,
   groups = NULL,
-  seed = NULL
+  mis_seed = NULL
 )
 }
 \arguments{
@@ -26,7 +26,7 @@ to identify levels in a multi-level setting}
 
 \item{groups}{list with grouping information}
 
-\item{seed}{optional seed value}
+\item{mis_seed}{optional seed value}
 }
 \description{
 Create MCAR missingness

@@ -25,8 +25,6 @@ to identify levels in a multi-level setting}
 \item{varlvls}{named vector giving the level of each variable}
 
 \item{groups}{list with grouping information}
-
-\item{seed}{optional seed value}
 }
 \description{
 Create MAR missingness
