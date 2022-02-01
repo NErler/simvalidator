@@ -329,7 +329,8 @@ split_formula_tvar <- function(formula, data, groups, tvar_lvl = "lvlone") {
 model_matrix <- function(formula, data) {
 
   formula <- terms(formula, data = data)
-  varnames <- all.vars(formula)
+  # varnames <- all.vars(formula)
+  varnames <- attr(formula, "term.labels")
 
   if (length(varnames) > 0) {
   vars <- attr(formula, "variables")
