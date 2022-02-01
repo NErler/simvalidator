@@ -179,6 +179,9 @@ extract_outcome_pars <- function(object) {
 extract_covar_pars <- function(object, timevar = NULL) {
 
   idvars <- names(object$Mlist$groups)
+  group_rel <- JointAI:::identify_level_relations(object$Mlist$groups)
+
+
   data <- object$data
 
   data_lvls <- cvapply(data, check_varlevel, groups = object$Mlist$groups)
@@ -266,7 +269,7 @@ extract_covar_pars <- function(object, timevar = NULL) {
 
   list(means = means, vcov = vcov, probs = probs, ordered = ordered,
        timevar_pars = timevar_pars,
-       group_lvls = object$Mlist$group_lvls)
+       group_lvls = object$Mlist$group_lvls, group_rel = group_rel)
 }
 
 

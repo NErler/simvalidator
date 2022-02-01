@@ -21,13 +21,19 @@ sim_covars_mvn <- function(N, covar_pars, seed = NULL, ...) {
   idvars <- names(covar_pars$means)
   group_lvls <- covar_pars$group_lvls
 
-  df <- lapply(idvars, function(lvl) {
+  df <- nlapply(idvars, function(lvl) {
 
-    new_data <- as.data.frame(
-      MASS::mvrnorm(N[lvl],
-                    mu = covar_pars$means[[lvl]],
-                    Sigma = covar_pars$vcov[[lvl]])
-    )
+    new_data <- if (length(covar_pars$means[[lvl]]) > 0L) {
+      as.data.frame(
+        MASS::mvrnorm(N[lvl],
+                      mu = covar_pars$means[[lvl]],
+                      Sigma = covar_pars$vcov[[lvl]])
+      )
+    } else {
+      temp <- data.frame(lvl = seq_len(N[lvl]))
+      names(temp) <- lvl
+      temp
+    }
 
     for (k in intersect(names(covar_pars$probs), names(new_data))) {
       probs <- covar_pars$probs[[k]]
@@ -40,12 +46,6 @@ sim_covars_mvn <- function(N, covar_pars, seed = NULL, ...) {
 
     new_data[[lvl]] <- seq_len(nrow(new_data))
 
-    for (k in names(group_lvls)[group_lvls > group_lvls[[lvl]]]) {
-      new_data[[k]] <- sort(c(
-        rep(seq_len(N[[k]]), each = floor(N[[lvl]]/N[[k]])),
-        sample.int(N[[k]], size = N[[lvl]] %% N[[k]])
-      ))
-    }
 
     if (!is.null(covar_pars$timevar_pars$name)) {
       fun <- get(paste0("r", covar_pars$timevar_pars$distr))
@@ -81,5 +81,39 @@ sim_covars_mvn <- function(N, covar_pars, seed = NULL, ...) {
     new_data
   })
 
-  Reduce(merge, df)
+
+  if (length(group_lvls) > 1) {
+  iddat <- lapply(N, seq.int)
+
+  for (k in sort(unique(group_lvls))[-1]) {
+
+    for (lvl in names(group_lvls)[which(group_lvls == k)]) {
+      lvl_prev <- names(group_lvls)[which(group_lvls == (k - 1))]
+
+      if (length(lvl_prev) > 1) {
+        type <- covar_pars$group_rel[lvl, lvl_prev] +
+          covar_pars$group_rel[lvl_prev, lvl]
+        lvl_prev <- names(type)[type == 1]
+      }
+
+      temp <- rep_lvls(iddat[[lvl]], N[[lvl_prev]])
+
+      if (sum(group_lvls == k) > 1) {
+        temp <- sample(temp)
+      }
+      iddat[[lvl]] <- temp[iddat[[lvl_prev]]]
+    }
+  }
+
+
+  if (!identical(JointAI:::identify_level_relations(iddat),
+                 covar_pars$group_rel[names(iddat), names(iddat)])) {
+    stop("The created data does not have the hierarchical structure indicated
+         in the input.")
+  }
+
+  Reduce(merge, c(list(as.data.frame(iddat)), df))
+  } else {
+    Reduce(merge, df)
+  }
 }
