@@ -97,20 +97,21 @@ get_res_df <- function(object) {
                true_param = object$outcome_pars$reg_coefs)
   }
 
-  true_param_df <- rbind(true_param_df,
-                         get_otherpars_df(object$outcome_pars$other_pars,
-                                          res_df),
-                         get_vcov_df(object$outcome_pars$ranef_vcov, res_df),
-                         get_resid_sd_df(object$outcome_pars$resid_sd, res_df)
-  )
+  if (!is.null(res_df)) {
+    true_param_df <- rbind(true_param_df,
+                           get_otherpars_df(object$outcome_pars$other_pars,
+                                            res_df),
+                           get_vcov_df(object$outcome_pars$ranef_vcov, res_df),
+                           get_resid_sd_df(object$outcome_pars$resid_sd, res_df)
+    )
 
-  res_df <- merge(res_df, true_param_df, all = TRUE)
+    res_df <- merge(res_df, true_param_df, all = TRUE)
 
-  res_df$bias <- res_df$Mean - res_df$true_param
-  res_df$relbias <- res_df$bias/res_df$true_param
-  res_df$covrg <- res_df$`2.5%` < res_df$true_param & res_df$`97.5%` > res_df$true_param
-  res_df$CIwidth <- res_df$`97.5%` - res_df$`2.5%`
-
+    res_df$bias <- res_df$Mean - res_df$true_param
+    res_df$relbias <- res_df$bias/res_df$true_param
+    res_df$covrg <- res_df$`2.5%` < res_df$true_param & res_df$`97.5%` > res_df$true_param
+    res_df$CIwidth <- res_df$`97.5%` - res_df$`2.5%`
+  }
   res_df
 }
 

@@ -56,13 +56,29 @@ outvars <- lapply(check_formula_list(object$outcome_pars$formula),
 
 
 
+
+#' Simulation report
+#'
+#' * `r object$file_name`
+#' * `r object$sim_pars$nr_sims` simulated datasets
+#'
+#' Scenarios
+#' * `r length(object$mis_scenarios)` scenarios with respect to missing data
+#' * `r length(object$models)` models
+#'
+#' &#8680; `r nrow(object$scenarios)` scenarios:
+object$scenarios
+#'
+#' * total time: `r object$time`
+object$platform
+
 #' # Data
 #' Target sample size per simulated dataset:
 object$outcome_pars$N %>%
   kable(col.names = " ") %>%
   kable_styling(full_width = FALSE)
 
-#+ samplesize, fig.height = 2, fig.cap = figcap
+#+ samplesize, fig.height = 4, fig.cap = figcap, warning = FALSE
 figcap <- "Sample size per data level (multi-level data) and simulated dataset.
 In models for time-to-event outcomes the size of the simulated data can differ
 from the target size since repeated measurements of covariates are simulated
@@ -127,6 +143,62 @@ unlist(object$missing_data_info, recursive = FALSE) %>%
                      breaks = seq(0, 1, 0.1)) +
   ylab("") +
   facet_wrap("level", scales = "free_y")
+
+
+
+
+#' # Technical Stuff
+lapply(object$compl_data_info, "[[", 'nr_tries') %>%
+  reshape2::melt() %>%
+  ggplot(aes(x = factor(L1),
+             fill = factor(value, levels = rev(sort(unique(value)))))) +
+  geom_bar() +
+  xlab("Simulation Nr.") +
+  scale_fill_viridis_d(name = "nr_tries", direction = -1) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "top")
+
+
+
+if (is.null(res_df)) {
+  knitr::knit_exit()
+}
+
+
+do.call(rbind, res_info) %>%
+  ggplot(aes(x = n_iter, y = duration_mins, color = model, shape = miss_scenario)) +
+  geom_point()
+
+do.call(rbind, res_info) %>%
+  ggplot(aes(x = interaction(model, miss_scenario), y = duration_mins)) +
+  geom_boxplot()
+
+do.call(rbind, res_info) %>%
+  ggplot(aes(x = interaction(model, miss_scenario), y = n_iter)) +
+  geom_boxplot() +
+  xlab("number of iterations per chain")
+
+
+do.call(rbind, res_info) %>%
+  ggplot(aes(x = interaction(model, miss_scenario), y = n_iter * n_chain)) +
+  geom_boxplot() +
+  xlab("total number of iterations (all chains)")
+
+
+do.call(rbind, res_info) %>%
+  ggplot(aes(x = interaction(model, miss_scenario), fill = factor(n_chain))) +
+  geom_bar()
+
+#
+# unique(subset(res_df,
+#               select = c("n_iter", "seed", "n_chain"),
+#               !is.na(n_iter))) %>%
+#   ggplot(aes(x = factor(n_chain), y = n_iter)) +
+#   geom_violin() +
+#   geom_jitter(width = 0.2, height = 0)
+
+
 
 
 
@@ -423,64 +495,4 @@ ggplot(subset(res_df, !is.na(`MCE/SD`)),
 
 
 
-
-#' # Technical Stuff
-lapply(object$compl_data_info, "[[", 'nr_tries') %>%
-  reshape2::melt() %>%
-  ggplot(aes(x = factor(L1),
-             fill = factor(value, labels = rev(sort(unique(value)))))) +
-  geom_bar() +
-  xlab("Simulation Nr.") +
-  scale_fill_viridis_d(name = "nr_tries") +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        legend.position = "top")
-
-# if (any(object$sim_res[[1]]$compl_data_info$nr_tries)) {
-#   reshape2::melt(
-#     lapply(object$sim_res, function(x) {
-#       nr_tries = x$compl_data_info$nr_tries
-#     })
-#   ) %>%
-#     ggplot(aes(x = factor(L1),
-#                fill = factor(value, labels = rev(sort(unique(value)))))) +
-#     geom_bar() +
-#     xlab("Simulation Nr.") +
-#     scale_fill_viridis_d(name = "nr_tries") +
-#     theme(axis.text.x = element_blank(),
-#           axis.ticks.x = element_blank(),
-#           legend.position = "top")
-# }
-
-do.call(rbind, res_info) %>%
-  ggplot(aes(x = n_iter, y = duration_mins, color = model, shape = miss_scenario)) +
-  geom_point()
-
-do.call(rbind, res_info) %>%
-  ggplot(aes(x = interaction(model, miss_scenario), y = duration_mins)) +
-  geom_boxplot()
-
-do.call(rbind, res_info) %>%
-  ggplot(aes(x = interaction(model, miss_scenario), y = n_iter)) +
-  geom_boxplot() +
-  xlab("number of iterations per chain")
-
-
-do.call(rbind, res_info) %>%
-  ggplot(aes(x = interaction(model, miss_scenario), y = n_iter * n_chain)) +
-  geom_boxplot() +
-  xlab("total number of iterations (all chains)")
-
-
-do.call(rbind, res_info) %>%
-  ggplot(aes(x = interaction(model, miss_scenario), fill = factor(n_chain))) +
-  geom_bar()
-
-#
-# unique(subset(res_df,
-#               select = c("n_iter", "seed", "n_chain"),
-#               !is.na(n_iter))) %>%
-#   ggplot(aes(x = factor(n_chain), y = n_iter)) +
-#   geom_violin() +
-#   geom_jitter(width = 0.2, height = 0)
 
