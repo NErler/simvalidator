@@ -21,8 +21,9 @@ sim_covars_mvn <- function(N, covar_pars, seed = NULL, ...) {
   idvars <- names(covar_pars$means)
   group_lvls <- covar_pars$group_lvls
 
+  iddat <- lapply(N, seq.int)
+
   if (length(group_lvls) > 1) {
-    iddat <- lapply(N, seq.int)
 
     for (k in sort(unique(group_lvls))[-1]) {
 
@@ -43,6 +44,8 @@ sim_covars_mvn <- function(N, covar_pars, seed = NULL, ...) {
         iddat[[lvl]] <- temp[iddat[[lvl_prev]]]
       }
     }
+  }
+
 
   df <- nlapply(idvars, function(lvl) {
 
@@ -105,16 +108,14 @@ sim_covars_mvn <- function(N, covar_pars, seed = NULL, ...) {
   })
 
 
-
-
-
   if (!identical(JointAI:::identify_level_relations(iddat),
                  covar_pars$group_rel[names(iddat), names(iddat)])) {
     stop("The created data does not have the hierarchical structure indicated
          in the input.")
   }
 
-  Reduce(merge, c(list(as.data.frame(iddat)), df))
+  if (length(idvars) > 1) {
+    Reduce(merge, c(list(as.data.frame(iddat)), df))
   } else {
     Reduce(merge, df)
   }
