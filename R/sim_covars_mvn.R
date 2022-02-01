@@ -62,7 +62,7 @@ sim_covars_mvn <- function(N, covar_pars, seed = NULL, ...) {
       probs <- covar_pars$probs[[k]]
       new_data[[k]] <- factor(
         cut(new_data[[k]],
-            c(-Inf, qnorm(probs[-length(probs)]), Inf),
+            c(-Inf, qnorm(cumsum(probs[-length(probs)])), Inf),
             labels = names(probs)),
         ordered = covar_pars$ordered[[k]])
     }
