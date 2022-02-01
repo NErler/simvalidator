@@ -48,7 +48,7 @@ run_sim_batch <- function(seeds,
     })
   })
 
-  batch_res <- lapply(batch_res, future::value)
+  batch_res_value <- lapply(batch_res, future::value)
 
   t1 <- Sys.time()
 
@@ -60,12 +60,13 @@ run_sim_batch <- function(seeds,
   file_name <- paste0(file_name, "_",
                       format(Sys.time(), "%Y-%m-%d_%H-%M"), ".RData")
   out <- structure(
-    list(sim_res = batch_res,
+    list(sim_res = batch_res_value,
          missing_data_info = missing_data_info,
          compl_data_info = complete_data_info,
          sim_pars = sim_pars,
          covar_def = covar_def,
          mis_scenarios = mis_scenarios,
+         scenarios = scenarios,
          outcome_pars = outcome_pars,
          models = models,
          time = t1 - t0,

@@ -16,17 +16,18 @@ extract_rd_vcov <- function(object) {
                                 split = ",")
         )
 
-        pos <- data.frame(apply(pos, 2, as.numeric))
+        pos <- lapply(as.data.frame(pos), as.numeric)
         pos$name <- names(vec)
 
-        mat <- matrix(nrow = max(pos$X1),
-                      ncol = max(pos$X1))
+        mat <- matrix(nrow = max(pos$V1),
+                      ncol = max(pos$V1))
 
-        for (i in seq_len(nrow(pos))) {
-          mat[pos$X1[i], pos$X2[i]] <- vec[pos$name[i]]
+        for (i in seq_len(length(pos[[1]]))) {
+          mat[pos$V1[i], pos$V2[i]] <- vec[pos$name[i]]
         }
 
-        mat[lower.tri(mat)] <- t(mat)[lower.tri(mat)]
+        if (ncol(mat) > 1L)
+          mat[lower.tri(mat)] <- t(mat)[lower.tri(mat)]
         structure(
           as.matrix(Matrix::nearPD(mat)$mat),
           "mat_name" = unique(gsub("\\[[[:print:]]+", "", pos$name))
@@ -252,15 +253,20 @@ extract_covar_pars <- function(object, timevar = NULL) {
          )
     )
   } else if (!is.null(timevar)) {
+    subj_lvl <- names(object$Mlist$group_lvls)[object$Mlist$group_lvls == 2]
+
     tv <- object$data_list[[object$Mlist$Mlvls[[timevar]]]][, timevar]
     multiply <- max(tv, na.rm = TRUE)
     tv <- tv/max(tv, na.rm = TRUE)
     tv[tv == 0] <- 1e-10
     tv[tv == 1] <- 1 - 1e-10
 
+
+    len <- nvapply(split(tv, object$Mlist$groups[[subj_lvl]]), length)
+
     list(name = timevar,
          distr = "beta",
-         length = quantile(nvapply(tv, length), 0.9, names = FALSE),
+         length = quantile(len, 0.9, names = FALSE),
          multiply = multiply,
          params = fitdistrplus::fitdist(tv, "beta", method = "mme")$estimate
     )
