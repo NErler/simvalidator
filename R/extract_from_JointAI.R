@@ -157,6 +157,9 @@ extract_outcome_pars <- function(object) {
     N = NA
   )
 
+  attr(l$formula, ".Environment") <- NULL
+
+
   if (response_type %in% c("joint_model", "survival")) {
     l$basehaz_type = "spline"
     l$other_pars = list(
