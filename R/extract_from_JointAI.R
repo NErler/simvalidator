@@ -157,8 +157,13 @@ extract_outcome_pars <- function(object) {
     N = NA
   )
 
-  attr(l$formula, ".Environment") <- NULL
-
+  if (inherits(l$formula, "formula")) {
+    attr(l$formula, ".Environment") <- NULL
+  } else if (inherits(l$formula, "list")) {
+    l$formula <- lapply(l$formula, function(k) {
+      attr(k, ".Environment") <- NULL
+    })
+  }
 
   if (response_type %in% c("joint_model", "survival")) {
     l$basehaz_type = "spline"
