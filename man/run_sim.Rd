@@ -12,7 +12,7 @@ run_sim(
   mis_scenarios = NULL,
   sim_name = NULL,
   scenarios = NULL,
-  batch_size = NULL,
+  batch_size = 10,
   batch_numbers = NULL,
   path = NULL,
   packages = NULL,
