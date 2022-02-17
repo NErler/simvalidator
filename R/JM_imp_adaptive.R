@@ -34,7 +34,7 @@ JM_imp_adaptive <- function(formula, data, df_basehaz = 6,
     data <- make_cc_subset(data, args$formula)
   }
 
-  inits <- get_inits_JM(formula = formula, data = data,
+  inits <- get_inits_JM(formula = formula[-1L], data = data,
                         inits_iter = inits_iter, n_chains = n.chains)
   args$inits <- inits
 
@@ -98,12 +98,16 @@ add_samples_adaptive <- function(fitted_model, extra_iter = NULL,
 #' @param inits_iter number of iterations
 #' @param n_chains  number of chains (has to be the same as in the joint model)
 #' @param seed seed value
+#' @param ... additional arguments
 #'
 #' @export
-get_inits_JM <- function(formula, data, inits_iter, n_chains, seed = NULL) {
+get_inits_JM <- function(formula, data, inits_iter, n_chains, seed = NULL,
+                         ...) {
 
-  prep <- JointAI::lme_imp(formula[-1], data = data, n.iter = inits_iter,
-                           n.chains = n_chains, seed = seed)
+  thecall <- as.list(match.call()[-1])
+  thecall$formula <- str2lang(paste0(deparse(eval(thecall$formula)), collapse = ""))
+
+  prep <- do.call(JointAI::lme_imp, thecall)
 
   as_inits(prep)
 }

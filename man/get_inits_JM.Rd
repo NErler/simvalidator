@@ -4,7 +4,7 @@
 \alias{get_inits_JM}
 \title{Generate initial values for a JointAI joint model}
 \usage{
-get_inits_JM(formula, data, inits_iter, n_chains, seed = NULL)
+get_inits_JM(formula, data, inits_iter, n_chains, seed = NULL, ...)
 }
 \arguments{
 \item{formula}{the model formula}
@@ -16,6 +16,8 @@ get_inits_JM(formula, data, inits_iter, n_chains, seed = NULL)
 \item{n_chains}{number of chains (has to be the same as in the joint model)}
 
 \item{seed}{seed value}
+
+\item{...}{additional arguments}
 }
 \description{
 Generate initial values for a JointAI joint model
