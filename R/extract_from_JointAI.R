@@ -195,7 +195,7 @@ extract_covar_pars <- function(object, timevar = NULL) {
 
   data_lvls <- cvapply(data, check_varlevel, groups = object$Mlist$groups)
 
-  covars <- setdiff(JointAI::all_vars(JointAI::remove_lhs(object$fixed)),
+  covars <- setdiff(JointAI::all_vars(JointAI:::remove_lhs(object$fixed)),
                     names(object$fixed))
 
   covars <- nlapply(idvars, function(lvl) {
