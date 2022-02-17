@@ -106,6 +106,8 @@ get_inits_JM <- function(formula, data, inits_iter, n_chains, seed = NULL,
 
   thecall <- as.list(match.call()[-1])
   thecall$formula <- str2lang(paste0(deparse(eval(thecall$formula)), collapse = ""))
+  thecall$n.iter <- thecall$inits_iter
+  thecall$n.chains <- thecall$n_chains
 
   prep <- do.call(JointAI::lme_imp, thecall)
 
