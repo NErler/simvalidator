@@ -320,7 +320,34 @@ create_simulation_scenario <- function(object, file, timevar = NULL) {
 
   outcome_pars <- extract_outcome_pars(object)
   covar_pars <- extract_covar_pars(object, timevar = timevar)
+  missingness <- extract_missingness(object)
 
-  save(outcome_pars, covar_pars, file = file)
+  save(outcome_pars, covar_pars, missingness, file = file)
 }
 
+
+
+extract_missingness <- function(object) {
+
+  allvars <- unique(c(all_vars(c(object$fixed,
+                                 object$random,
+                                 object$Mlist$auxvars)),
+
+                      object$Mlist$timevar))
+
+  mdpat <- JointAI::md_pattern(object$data[, allvars],
+                               sort_columns = FALSE, plot = FALSE,
+                               pattern = TRUE)
+
+  missinfo <- JointAI::get_missinfo(object)
+  missinfo$complete_cases <- rbind(
+    missinfo$complete_cases,
+    data.frame(`level` = "overall",
+               `#` = sum(complete.cases(object$data[, allvars])),
+               `%` = mean(complete.cases(object$data[, allvars])) * 100,
+               check.names = FALSE)
+  )
+
+  list(mdpat = mdpat[-nrow(mdpat), -ncol(mdpat)],
+       missinfo = missinfo)
+}
