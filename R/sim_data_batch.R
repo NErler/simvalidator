@@ -27,7 +27,7 @@ sim_data_batch <- function(data_seeds, covar_def, outcome_pars,  packages = NULL
 
       data_list <- lapply(names(mis_scenarios), function(scen) {
         data <- structure(
-          simvalidator:::create_missingness(
+          create_missings(
             data_orig, mis_scenarios[[scen]],
             idvars = setdiff(names(groups), "lvlone"),
             groups = groups, varlvls = data_lvls,
