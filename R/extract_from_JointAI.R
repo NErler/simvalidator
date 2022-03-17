@@ -162,6 +162,7 @@ extract_outcome_pars <- function(object) {
   } else if (inherits(l$formula, "list")) {
     l$formula <- lapply(l$formula, function(k) {
       attr(k, ".Environment") <- NULL
+      k
     })
   }
 
@@ -195,8 +196,10 @@ extract_covar_pars <- function(object, timevar = NULL) {
 
   data_lvls <- cvapply(data, check_varlevel, groups = object$Mlist$groups)
 
-  covars <- setdiff(JointAI::all_vars(JointAI:::remove_lhs(object$fixed)),
-                    names(object$fixed))
+  covars <- setdiff(JointAI::all_vars(
+    c(JointAI:::remove_lhs(object$fixed),
+      object$Mlist$auxvars)),
+    names(object$fixed))
 
   covars <- nlapply(idvars, function(lvl) {
     intersect(covars, names(data_lvls)[data_lvls == lvl])
