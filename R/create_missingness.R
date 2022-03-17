@@ -44,7 +44,6 @@
 #'                this argument allows to define MCAR, MAR or MNAR missingness.
 #'                If not specified, `weights` is set equal to `patterns`, i.e.,
 #'                MAR with all observed variables being predictors.
-#' @inheritParams mice::ampute
 #' @export
 #'
 
