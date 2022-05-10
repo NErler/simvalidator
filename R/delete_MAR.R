@@ -37,7 +37,7 @@ delete_MAR <- function(data, missing, idvars = NULL, varlvls = NULL,
 }
 
 logit <- function(x) {
-  log(x/(1-x))
+  log(x/(1 - x))
 }
 
 calc_lp <- function(mat, coef) {
