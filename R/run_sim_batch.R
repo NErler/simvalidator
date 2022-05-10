@@ -7,7 +7,7 @@ run_sim_batch <- function(seeds,
 
   # simulate all complete datasets for this batch
   datlist <- sim_data_batch(data_seeds = seeds, covar_def, outcome_pars,
-                            packages = packages)
+                            packages = packages, mis_scenarios = mis_scenarios)
 
   message("List of datasets generated.")
 
