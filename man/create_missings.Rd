@@ -2,29 +2,7 @@
 % Please edit documentation in R/create_missingness.R
 \name{create_missings}
 \alias{create_missings}
-\title{#' Create missingness in a \code{data.frame}
-#' @inheritParams delete_MCAR
-#' @param mis_scen a missingness scenario
-create_missingness <- function(data, mis_scen, varlvls = NULL,
-groups = NULL, idvars = NULL, mis_seed = NULL) {
-if (is.null(mis_scen)) {
-return(data)
-} else {
-args <- c(list(data = data),
-mis_scen$fun_args,
-idvars = idvars,
-if (is.null(mis_scen$fun_args$varlvls)) {
-list(varlvls = varlvls)
-},
-if (is.null(mis_scen$fun_args$groups)) {
-list(groups = groups)
-},
-if (is.null(mis_scen$fun_args$mis_seed)) {
-c(mis_seed = mis_seed)
-})
-do.call(mis_scen$fun, args)
-}
-}}
+\title{Create missing values in a \code{data.frame}}
 \usage{
 create_missings(
   data,
@@ -57,13 +35,6 @@ which variables are predictive of missingness in this pattern;
 this argument allows to define MCAR, MAR or MNAR missingness.
 If not specified, \code{weights} is set equal to \code{patterns}, i.e.,
 MAR with all observed variables being predictors.}
-
-\item{type}{A string or vector of strings containing the type of missingness for each
-pattern. Either \code{"LEFT"}, \code{"MID"}, \code{"TAIL"} or '\code{"RIGHT"}.
-If a single missingness type is given, all patterns will be created with the same
-type. If the missingness types should differ between patterns, a vector of missingness
-types should be given. Default is RIGHT for all patterns and is the result of
-\code{\link[mice]{ampute.default.type}}.}
 }
 \description{
 Create missing values in a \code{data.frame}

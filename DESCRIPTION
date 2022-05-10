@@ -28,5 +28,6 @@ Imports:
     ggplot2,
     reshape2,
     rmarkdown,
-    Rcpp
+    Rcpp,
+    CVXR
 Suggests: benchmarkme, plyr, kableExtra, lme4
