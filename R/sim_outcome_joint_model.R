@@ -113,6 +113,10 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
   data = long_out$data
   ranefs = long_out$ranefs
 
+  f_rd <- lapply(fmla_random, remove_grouping)
+  f_f <- JointAI:::remove_lhs(fmla_fixed)
+
+
   inv_survival <- function(t, u, i) {
     h <- function(times) {
 
@@ -120,18 +124,19 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
       temp_data <- data[rows, , drop = FALSE]
       temp_data[[timevar]] <- times
 
+      r <- lapply(ranefs, function(v) {
+        lapply(v, function(lvl) {
+          lvl[rows, , drop = FALSE]
+        })
+      })
+
       temp_data <- sim_linpred_glmm(data = temp_data,
-                                    fmla_fixed = fmla_fixed,
-                                    fmla_random = lapply(fmla_random, remove_grouping),
+                                    fmla_fixed = f_f,
+                                    fmla_random = f_rd,
                                     reg_coefs = reg_coefs[names(fmla_fixed)],
                                     resid_sd = resid_sd,
                                     type = type,
-                                    ranefs = lapply(ranefs, function(v) {
-                                      lapply(v, function(lvl) {
-                                        lvl[rows, , drop = FALSE]
-                                      })
-                                    })
-      )
+                                    ranefs = r)
 
       desgn_mat_surv_tvar <- model_matrix(fmla_surv$tvar, temp_data)
       lp_surv_tvar <- desgn_mat_surv_tvar %*%
