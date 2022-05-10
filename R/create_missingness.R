@@ -44,14 +44,22 @@
 #'                this argument allows to define MCAR, MAR or MNAR missingness.
 #'                If not specified, `weights` is set equal to `patterns`, i.e.,
 #'                MAR with all observed variables being predictors.
-#' @inheritParams mice::ampute
+#' @param idvars vector with names of id variables (without "lvlone")
+#' @param groups optional: grouping structure of the data
+#' @param varlvls optional: level of each variable.
+#' @param seed optional seed value
 #' @export
 #'
 
-create_missings <- function(data, idvars, prop_mis, prop_cc, patterns = NULL,
-                            weights = NULL, type = "RIGHT", groups = NULL,
-                            varlvls = NULL) {
+create_missings <- function(data, idvars, prop_mis = NULL,
+                            prop_cc = NULL, patterns = NULL,
+                            weights = NULL, groups = NULL,
+                            varlvls = NULL, seed = NULL) {
 
+
+  if (prop_cc == 1) {
+    return(data = data)
+  }
 
   if (prop_cc < max(0, 1 - sum(prop_mis)) | prop_cc > 1 - max(prop_mis)) {
     simvalidator:::errormsg("For the given vector of missingness proportions per variable, the
@@ -161,6 +169,9 @@ create_missings <- function(data, idvars, prop_mis, prop_cc, patterns = NULL,
             reshape2::melt(id.vars = 'lvlone',
                            variable.name = "pat_nr"))
 
+  if (!is.null(seed))
+    set.seed(seed)
+
   for (lvl in names(lvls)) {
     # merge with patterns to get set for next selection
     p <- merge(r, pat)
@@ -195,6 +206,20 @@ create_missings <- function(data, idvars, prop_mis, prop_cc, patterns = NULL,
     dplyr::arrange(lvlone)
 
 
-  list(P = P, pat = pat, amp = amp, patterns = patterns,
+  list(mis_ind = P,
+       pat = pat, data = amp, patterns = patterns,
        scores = scores, weights = weights)
 }
+
+
+
+
+#
+# shift_score <- function(score, prop_mis = 0.3) {
+#   shift <- optimize(interval = c(-10, 10),
+#                     f = function(offset, .prop_mis = prop_mis, .score = score) {
+#                       abs(mean(plogis(offset + .score)) - .prop_mis)
+#                     })$minimum
+#   shift + score
+# }
+#
