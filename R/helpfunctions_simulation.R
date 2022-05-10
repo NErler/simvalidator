@@ -162,9 +162,9 @@ get_knots_h0 <- function(nkn, Time, gkx, obs_kn = TRUE) {
 
 
 centering <- function(data) {
-  for (k in names(data)) {
-    if (!inherits(data[[k]], "factor")) {
-      data[[k]] <- data[[k]] - mean(data[[k]], na.rm = TRUE)
+  for (k in colnames(data)) {
+    if (!inherits(data[, k], "factor")) {
+      data[, k] <- data[, k] - mean(data[, k], na.rm = TRUE)
     }
   }
   data
