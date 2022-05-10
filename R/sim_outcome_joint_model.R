@@ -82,8 +82,7 @@ sim_outcome_joint_model <- function(data, formula, reg_coefs, resid_sd,
   surv_names <- all.vars(fmla$surv[[1L]][[2L]])
 
 
-  desgn_mat_surv_tconst <- model_matrix(fmla_surv$tconst,
-                                        centering(surv_data))
+  desgn_mat_surv_tconst <- centering(model_matrix(fmla_surv$tconst, surv_data))
 
 
   if (basehaz_type == "spline") {
